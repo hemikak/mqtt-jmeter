@@ -34,6 +34,7 @@
 
 	<properties>
 		<jmeter-version>2.10</jmeter-version>
+		<fusesource.mqtt.version>1.4</fusesource.mqtt.version>
 	</properties>
 
 	<dependencies>
@@ -54,7 +55,7 @@
 		<dependency>
 			<groupId>org.fusesource.mqtt-client</groupId>
 			<artifactId>mqtt-client</artifactId>
-			<version>1.4</version>
+			<version>${fusesource.mqtt.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -70,6 +71,29 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<!-- here the phase you need -->
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
