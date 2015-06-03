@@ -63,7 +63,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
     private final JCheckBox useAuth = new JCheckBox(JMeterUtils.getResString("mqtt_use_auth"), false); //$NON-NLS-1$
     private final JLabeledTextField timeout =  new JLabeledTextField(JMeterUtils.getResString("mqtt_timeout")); //$NON-NLS-1$
     private final JLabeledTextField separator =  new JLabeledTextField(JMeterUtils.getResString("mqtt_separator")); //$NON-NLS-1$
-    private final JCheckBox suffixClientId = new JCheckBox(JMeterUtils.getResString("mqtt_suffix_client_id"),true); // $NON-NLS-1$
+    private final JCheckBox suffixClientId = new JCheckBox(JMeterUtils.getResString("mqtt_suffix_client_id"),false); // $NON-NLS-1$
     private final JLabeledTextField suffixLength = new JLabeledTextField(JMeterUtils.getResString("mqtt_suffix_length")); //$NON-NLS-1$
     private final JCheckBox connectionPerTopic = new JCheckBox(JMeterUtils.getResString("mqtt_connection_per_topic"), false); // $NON-NLS-1$
     private final JLabeledRadioI18N topicChoice = new JLabeledRadioI18N("mqtt_topic_choice", TOPIC_CHOICES,ROUND_ROBIN); //$NON-NLS-1$
@@ -144,6 +144,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ChangeListe
 		mainPanel.add(TPanel);
 		useAuth.addChangeListener(this);
 		suffixClientId.addChangeListener(this);
+        suffixLength.setVisible(false);
 		
     }
     /**

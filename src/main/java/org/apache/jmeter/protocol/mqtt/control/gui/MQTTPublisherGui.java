@@ -118,7 +118,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
 	private final JLabeledRadioI18N msgFormat = new JLabeledRadioI18N("mqtt_message_format", MSGFORMAT_ITEMS,NO_ENCODING); //$NON-NLS-1$
 	private final JLabeledRadioI18N topicChoice = new JLabeledRadioI18N("mqtt_topic_choice", TOPIC_CHOICES,ROUND_ROBIN); //$NON-NLS-1$
 	private final JCheckBox connectionPerTopic = new JCheckBox(JMeterUtils.getResString("mqtt_connection_per_topic"), false); // $NON-NLS-1$
-	private final JCheckBox suffixClientId = new JCheckBox(JMeterUtils.getResString("mqtt_suffix_client_id"),true); // $NON-NLS-1$
+	private final JCheckBox suffixClientId = new JCheckBox(JMeterUtils.getResString("mqtt_suffix_client_id"),false); // $NON-NLS-1$
 	private final JLabeledTextField suffixLength = new JLabeledTextField(JMeterUtils.getResString("mqtt_suffix_length")); //$NON-NLS-1$
 	// For messages content
 	private final JCheckBox useTimeStamp = new JCheckBox(JMeterUtils.getResString("mqtt_use_time_stamp"), false); // $NON-NLS-1$
@@ -339,6 +339,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
 		updateChoice(msgChoice.getText());
 		updateChoice(msgFormat.getText());
 		updateChoice("Suffix="+String.valueOf(this.suffixClientId.isSelected()));
+		suffixLength.setVisible(false);
 	
 	}
 	

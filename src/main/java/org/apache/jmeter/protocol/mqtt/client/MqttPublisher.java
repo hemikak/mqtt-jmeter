@@ -111,7 +111,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 			}
 					
 		} catch (Exception e) {
-			getLogger().error(e.getMessage());
+			getLogger().error(e.getMessage(), e);
 		}
 		
 	}
@@ -135,7 +135,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 				 }
 			getLogger().info("Connection successful..");
 		} catch (Exception e) {
-			getLogger().error(e.getMessage());
+			getLogger().error(e.getMessage(), e);
 		}
 	}
 
@@ -147,7 +147,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 			client.setClientId(clientId);
 			return client.futureConnection();
 		} catch (URISyntaxException e) {
-			getLogger().error(e.getMessage());
+			getLogger().error(e.getMessage(), e);
 			return null;
 		}
 
@@ -162,7 +162,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 			client.setClientId(clientId);
 			return client.futureConnection();
 		} catch (URISyntaxException e) {
-			getLogger().error(e.getMessage());
+			getLogger().error(e.getMessage(), e);
 			return null;
 		}
 
@@ -440,7 +440,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 		} catch (Exception e) {
 			result.sampleEnd(); // stop stopwatch
 			result.setSuccessful(false);
-			result.setResponseMessage("Exception: " + e);
+			result.setResponseMessage("Exception: " + e.toString());
 			// get stack trace as a String to return as document data
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
 			e.printStackTrace(new java.io.PrintWriter(stringWriter));
