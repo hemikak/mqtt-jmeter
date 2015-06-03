@@ -26,7 +26,6 @@ import java.util.Date;
 
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.client.ListenerforSubscribe;
 import org.apache.jmeter.protocol.mqtt.client.MqttSubscriber;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
@@ -40,8 +39,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 
     private static final long serialVersionUID = 240L;
     private static final Logger log = LoggingManager.getLoggerForClass();
-    private static final String DURABLE_SUBSCRIPTION_ID = "mqtt.durableSubscriptionId"; // $NON-NLS-1$
-    private static final String DURABLE_SUBSCRIPTION_ID_DEFAULT = "";
     private static final String CLIENT_ID = "mqtt.clientId"; // $NON-NLS-1$
     private static final String CLIENT_ID_DEFAULT = ""; // $NON-NLS-1$
     private static final String TIMEOUT = "mqtt.timeout"; // $NON-NLS-1$
@@ -50,9 +47,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
     private static String OneConnectionPerTopic = "mqtt.one_connection_per_topic"; //$NON-NLS-1$
     public transient MqttSubscriber subscriber = null;
     private JavaSamplerContext context = null;
-    private static String Length = "mqtt.suffix.length";//$NON-NLS-1$
-    private static String RandomSuffix = "mqtt.random_suffix_client_id";//$NON-NLS-1$
-    private static String STRATEGY = "mqtt.strategy"; //$NON-NLS-1$
     private static String CLEAN_SESSION = "mqtt.clean.session";//$NON-NLS-1$
 
     public SubscriberSampler() {
@@ -63,7 +57,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
         return getPropertyAsString(CLEAN_SESSION);
     }
 
-    public void setCLEANSESSION(boolean cLEANSESSION) {
+    public void setCleanSession(boolean cLEANSESSION) {
 
         if (cLEANSESSION) {
             setProperty(CLEAN_SESSION, "true");
@@ -93,22 +87,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
     private String getQuality() {
         return getPropertyAsString(QUALITY);
     }
-
-    public String getSTRATEGY() {
-        return getPropertyAsString(STRATEGY);
-
-    }
-
-    public void setSTRATEGY(String sTRATEGY) {
-        setProperty(STRATEGY, sTRATEGY);
-
-    }
-
-    public void setDurableSubscriptionId(String durableSubscriptionId) {
-        setProperty(DURABLE_SUBSCRIPTION_ID, durableSubscriptionId,
-                DURABLE_SUBSCRIPTION_ID_DEFAULT);
-    }
-
     public void setClientID(String clientId) {
         setProperty(CLIENT_ID, clientId, CLIENT_ID_DEFAULT);
 
@@ -118,9 +96,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
         setProperty(TIMEOUT, timeout, TIMEOUT_DEFAULT);
     }
 
-    public String getDurableSubscriptionId() {
-        return getPropertyAsString(DURABLE_SUBSCRIPTION_ID);
-    }
 
     public String getClientId() {
         return getPropertyAsString(CLIENT_ID, CLIENT_ID_DEFAULT);
@@ -130,33 +105,10 @@ public class SubscriberSampler extends BaseMQTTSampler implements
         return getPropertyAsString(TIMEOUT, TIMEOUT_DEFAULT);
     }
 
-    public void setRandomSuffix(boolean randomSuffix) {
-        setProperty(RandomSuffix, randomSuffix);
-
-    }
-
-    public boolean useRandomSuffix() {
-        String randomSuffix = getPropertyAsString(RandomSuffix);
-        if ("TRUE".equalsIgnoreCase(randomSuffix)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void setLength(String length) {
-        setProperty(Length, length);
-    }
-
-    public String getLength() {
-        return getPropertyAsString(Length);
-    }
-
     @Override
     public boolean interrupt() {
 
         System.out.println("Hello interrupt");
-        System.out.println("Received " + ListenerforSubscribe.count.get() + " messages");
         log.debug("Thread ended " + new Date());
         if (this.subscriber != null) {
             try {
@@ -175,7 +127,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
     public void testEnded() {
         System.out.println("Hello testended");
         log.debug("Thread ended " + new Date());
-        System.out.println("Received " + ListenerforSubscribe.count.get() + " messages");
         if (this.subscriber != null) {
             try {
                 this.subscriber.close();
@@ -260,7 +211,6 @@ public class SubscriberSampler extends BaseMQTTSampler implements
     public void threadFinished() {
 
         log.debug("Thread ended " + new Date());
-        System.out.println("Received " + ListenerforSubscribe.count.get() + " messages");
         if (this.subscriber != null) {
             try {
                 this.subscriber.close();

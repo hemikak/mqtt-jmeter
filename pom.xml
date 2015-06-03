@@ -34,7 +34,6 @@
 
 	<properties>
 		<jmeter-version>2.10</jmeter-version>
-		<fusesource.mqtt.version>1.4</fusesource.mqtt.version>
 		<eclipse.paho.mqtt.version>0.4.0</eclipse.paho.mqtt.version>
 	</properties>
 
@@ -58,12 +57,6 @@
 			<artifactId>ApacheJMeter_java</artifactId>
 			<version>${jmeter-version}</version>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.fusesource.mqtt-client</groupId>
-			<artifactId>mqtt-client</artifactId>
-			<version>${fusesource.mqtt.version}</version>
 		</dependency>
 
 		<dependency>

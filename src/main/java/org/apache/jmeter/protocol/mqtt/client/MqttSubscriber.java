@@ -38,28 +38,15 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 import java.io.Serializable;
-import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MqttSubscriber extends AbstractJavaSamplerClient implements
         Serializable {
     private static LinkedBlockingQueue<MqttMessage> mqttMessageStorage;
-    private AtomicLong receivedMessageCount;
-    private MqttAsyncClient client;
+    private static AtomicLong receivedMessageCount;
+    private static MqttAsyncClient client;
     private static final long serialVersionUID = 1L;
-    private static final String mycharset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    public static String getClientId(String clientPrefix, int suffixLength) {
-        Random rand = new Random(System.nanoTime() * System.currentTimeMillis());
-        StringBuilder sb = new StringBuilder();
-        sb.append(clientPrefix);
-        for (int i = 0; i < suffixLength; i++) {
-            int pos = rand.nextInt(mycharset.length());
-            sb.append(mycharset.charAt(pos));
-        }
-        return sb.toString();
-    }
 
     @Override
     public Arguments getDefaultParameters() {
@@ -98,7 +85,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
             }
 
             client = new MqttAsyncClient(host, clientId);
-            JMeterIMqttActionListener actionListener = new JMeterIMqttActionListener(topic, qos, client);
+            JMeterIMqttSubscriberActionListener actionListener = new JMeterIMqttSubscriberActionListener(topic, qos, client);
 
             MqttConnectOptions connectOptions = new MqttConnectOptions();
             connectOptions.setUserName(user);
@@ -110,7 +97,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
             mqttMessageStorage = new LinkedBlockingQueue<MqttMessage>();
             receivedMessageCount = new AtomicLong(0);
 
-            JMeterMqttCallback callback = new JMeterMqttCallback();
+            JMeterMqttSubscriberCallback callback = new JMeterMqttSubscriberCallback();
             client.setCallback(callback);
         } catch (MqttSecurityException e) {
             getLogger().error("Security related error occurred", e);
@@ -124,15 +111,15 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
         result.sampleStart();
         try {
             while (true) {
-                if(null != mqttMessageStorage && null != receivedMessageCount){
+                if(null != mqttMessageStorage && null != receivedMessageCount && !mqttMessageStorage.isEmpty()){
                     if (null != context.getParameter("TIMEOUT") && !context.getParameter("TIMEOUT").equals("")) {
                         Thread.sleep(Long.parseLong(context.getParameter("TIMEOUT")));
                     }
-                    result.sampleEnd(); // stop stopwatch
                     result.setSuccessful(true);
                     result.setResponseMessage("Received " + receivedMessageCount.get() + " messages(may be incorrect)");
                     MqttMessage message = mqttMessageStorage.take();
                     result.setResponseData(message.getPayload());
+                    result.sampleEnd(); // stop stopwatch
                     result.setResponseCode("OK");
                     return result;
                 }
@@ -162,13 +149,13 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
         }
     }
 
-    private class JMeterIMqttActionListener implements IMqttActionListener{
+    private class JMeterIMqttSubscriberActionListener implements IMqttActionListener{
 
         private String topic;
         private int qos;
         private MqttAsyncClient asyncClient;
 
-        public JMeterIMqttActionListener(String topic, int qos, MqttAsyncClient asyncClient) {
+        public JMeterIMqttSubscriberActionListener(String topic, int qos, MqttAsyncClient asyncClient) {
             this.topic = topic;
             this.qos = qos;
             this.asyncClient = asyncClient;
@@ -200,7 +187,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
         }
     }
 
-    private class JMeterMqttCallback implements MqttCallback {
+    private class JMeterMqttSubscriberCallback implements MqttCallback {
         @Override
         public void connectionLost(Throwable throwable) {
             getLogger().error("Connection lost on callback", throwable);
