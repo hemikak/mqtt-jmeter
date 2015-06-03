@@ -30,13 +30,10 @@ public abstract class BaseMQTTSampler extends AbstractSampler {
     private static final long serialVersionUID = 240L;
     private static final String PROVIDER_URL = "mqtt.provider_url"; // $NON-NLS-1$
     private static final String DEST = "mqtt.topic"; // $NON-NLS-1$
-    private static final String PRINCIPAL = "mqtt.security_principle"; // $NON-NLS-1$
-    private static final String CREDENTIALS = "mqtt.security_credentials"; // $NON-NLS-1$
     private static final String ITERATIONS = "mqtt.iterations"; // $NON-NLS-1$
-    private static final String USE_AUTH = "mqtt.authenticate"; // $NON-NLS-1$
-    private static final String REQUIRED = JMeterUtils.getResString("mqtt_auth_required"); // $NON-NLS-1$
- 
-   
+    private static final String USER_NAME = "mqtt_user_username"; // $NON-NLS-1$
+    private static final String PASSWORD = "mqtt_user_password"; // $NON-NLS-1$
+
     /**
      * Constructor
      */
@@ -89,7 +86,7 @@ public abstract class BaseMQTTSampler extends AbstractSampler {
      * @param user
      */
     public void setUsername(String user) {
-        setProperty(PRINCIPAL, user);
+        setProperty(USER_NAME, user);
     }
 
     /**
@@ -98,7 +95,7 @@ public abstract class BaseMQTTSampler extends AbstractSampler {
      * @return the username used to login to the mqtt server
      */
     public String getUsername() {
-        return getPropertyAsString(PRINCIPAL);
+        return getPropertyAsString(USER_NAME);
     }
     /**
      * Set the password to login to the mqtt server
@@ -106,7 +103,7 @@ public abstract class BaseMQTTSampler extends AbstractSampler {
      * @param pwd
      */
     public void setPassword(String pwd) {
-        setProperty(CREDENTIALS, pwd);
+        setProperty(PASSWORD, pwd);
     }
 
     /**
@@ -115,8 +112,9 @@ public abstract class BaseMQTTSampler extends AbstractSampler {
      * @return the password used to login to the mqtt server
      */
     public String getPassword() {
-        return getPropertyAsString(CREDENTIALS);
+        return getPropertyAsString(PASSWORD);
     }
+
     /**
      * set the number of iterations the sampler should aggregate
      *
@@ -144,23 +142,4 @@ public abstract class BaseMQTTSampler extends AbstractSampler {
         return getPropertyAsInt(ITERATIONS);
     }
 
-    /**
-     * Set whether authentication is required for mqtt server
-     *
-     * @param useAuth
-     */
-    public void setUseAuth(boolean useAuth) {
-        setProperty(USE_AUTH, useAuth);
-    }
-    /**
-     * 
-     *
-     * @return whether mqtt server requires authentication
-     */
-    public boolean isUseAuth() {
-        final String useAuth = getPropertyAsString(USE_AUTH);
-        return useAuth.equalsIgnoreCase("true") || useAuth.equals(REQUIRED); // $NON-NLS-1$
-    }
- 
-	
 }

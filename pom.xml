@@ -35,7 +35,15 @@
 	<properties>
 		<jmeter-version>2.10</jmeter-version>
 		<fusesource.mqtt.version>1.4</fusesource.mqtt.version>
+		<eclipse.paho.mqtt.version>0.4.0</eclipse.paho.mqtt.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>Eclipse Paho Repo</id>
+			<url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -56,6 +64,12 @@
 			<groupId>org.fusesource.mqtt-client</groupId>
 			<artifactId>mqtt-client</artifactId>
 			<version>${fusesource.mqtt.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.paho</groupId>
+			<artifactId>mqtt-client</artifactId>
+			<version>${eclipse.paho.mqtt.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -107,11 +121,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<target>
-						<chmod file="target/installer.sh" perm="755"/>
-					</target>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

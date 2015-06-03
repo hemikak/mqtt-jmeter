@@ -379,7 +379,7 @@ public class PublisherSampler extends BaseMQTTSampler implements ThreadListener,
 
 		// -----------------------User/Password-------------------------------//
 
-		if (this.isUseAuth()) {
+		if (true) {
 			parameters.addArgument("AUTH", "TRUE");
 			parameters.addArgument("USER", getUsername());
 			parameters.addArgument("PASSWORD", getPassword());

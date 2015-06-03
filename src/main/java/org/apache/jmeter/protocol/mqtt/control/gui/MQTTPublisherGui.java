@@ -296,7 +296,6 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
 		sampler.setTextMessage(textMessage.getText());
 		sampler.setMessageChoice(msgChoice.getText());
 		sampler.setIterations(iterations.getText());
-		sampler.setUseAuth(useAuth.isSelected());
 		sampler.setQuality(typeQoSValue.getText());
         sampler.setRetained(isRetained.isSelected());
         sampler.setTYPE_FIXED_VALUE(typeFixedValue.getText());
@@ -333,7 +332,6 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
 		textMessage.setCaretPosition(0);
 		msgChoice.setText(sampler.getMessageChoice());
 		iterations.setText(sampler.getIterations());
-		useAuth.setSelected(sampler.isUseAuth());
 		mqttUser.setEnabled(useAuth.isSelected());
 		mqttPwd.setEnabled(useAuth.isSelected());
 		updateChoice(msgChoice.getText());
