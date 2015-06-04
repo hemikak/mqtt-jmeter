@@ -26,6 +26,7 @@ import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
+import org.apache.jmeter.protocol.mqtt.sampler.SubscriberSampler;
 import org.apache.jmeter.samplers.SampleResult;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -36,17 +37,22 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.Serializable;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MqttSubscriber extends AbstractJavaSamplerClient implements
         Serializable {
-    private static LinkedBlockingQueue<MqttMessage> mqttMessageStorage;
+    private static ConcurrentLinkedQueue<byte[]> mqttMessageStorage = new ConcurrentLinkedQueue<byte[]>();
     private static AtomicLong receivedMessageCount;
     private static MqttAsyncClient client;
+    private String topic;
     private static final long serialVersionUID = 1L;
+    private boolean interrupted;
 
     @Override
     public Arguments getDefaultParameters() {
@@ -84,7 +90,14 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
                 qos = 2;
             }
 
-            client = new MqttAsyncClient(host, clientId);
+            this.topic = topic;
+
+            String generateClientId = MqttAsyncClient.generateClientId();
+            if(generateClientId.length() > 20){
+                generateClientId = generateClientId.substring(0, 20);
+            }
+
+            client = new MqttAsyncClient(host, generateClientId, new MemoryPersistence());
             JMeterIMqttSubscriberActionListener actionListener = new JMeterIMqttSubscriberActionListener(topic, qos, client);
 
             MqttConnectOptions connectOptions = new MqttConnectOptions();
@@ -94,7 +107,6 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
 
             client.connect(connectOptions,  null, actionListener);
 
-            mqttMessageStorage = new LinkedBlockingQueue<MqttMessage>();
             receivedMessageCount = new AtomicLong(0);
 
             JMeterMqttSubscriberCallback callback = new JMeterMqttSubscriberCallback();
@@ -109,40 +121,70 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
     public SampleResult runTest(JavaSamplerContext context) {
         SampleResult result = new SampleResult();
         result.sampleStart();
-        try {
-            while (true) {
-                if(null != mqttMessageStorage && null != receivedMessageCount && !mqttMessageStorage.isEmpty()){
-                    if (null != context.getParameter("TIMEOUT") && !context.getParameter("TIMEOUT").equals("")) {
-                        Thread.sleep(Long.parseLong(context.getParameter("TIMEOUT")));
-                    }
-                    result.setSuccessful(true);
-                    result.setResponseMessage("Received " + receivedMessageCount.get() + " messages(may be incorrect)");
-                    MqttMessage message = mqttMessageStorage.take();
-                    result.setResponseData(message.getPayload());
-                    result.sampleEnd(); // stop stopwatch
-                    result.setResponseCode("OK");
-                    return result;
-                }
+
+        byte[] messagePayload = null;
+        while(!interrupted && null != mqttMessageStorage && null != receivedMessageCount){
+            messagePayload = mqttMessageStorage.poll();
+            if(messagePayload != null){
+                break;
             }
-        } catch (InterruptedException e) {
-            result.sampleEnd(); // stop stopwatch
-            result.setSuccessful(false);
-            result.setResponseMessage("Exception: " + e);
-            // get stack trace as a String to return as document data
-            java.io.StringWriter stringWriter = new java.io.StringWriter();
-            e.printStackTrace(new java.io.PrintWriter(stringWriter));
-            result.setResponseData(stringWriter.toString(), null);
-            result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
-            result.setResponseCode("FAILED");
-            return result;
         }
+
+        result.setSuccessful(true);
+        result.setResponseMessage("Received " + receivedMessageCount.get() + " messages(may be incorrect)");
+
+        result.setResponseData(messagePayload);
+        result.sampleEnd(); // stop stopwatch
+        result.setResponseCode("OK");
+        return result;
+
+//        try {
+//            while (true) {
+//                if(client.isConnected() && null != mqttMessageStorage && null != receivedMessageCount){
+//                    MqttMessage message = mqttMessageStorage.poll();
+//                    if (null != message) {
+//                        if (null != context.getParameter("TIMEOUT") && !context.getParameter("TIMEOUT").equals("")) {
+//                            Thread.sleep(Long.parseLong(context.getParameter("TIMEOUT")));
+//                        }
+//                        result.setSuccessful(true);
+//                        result.setResponseMessage("Received " + receivedMessageCount.get() + " messages(may be incorrect)");
+//
+//                        result.setResponseData(message.getPayload());
+//                        result.sampleEnd(); // stop stopwatch
+//                        result.setResponseCode("OK");
+//                        return result;
+//                    }
+//                }else if(interrupted){
+//                    result.setSuccessful(false);
+//                    result.setResponseMessage("Client is being stopped");
+//                    result.sampleEnd(); // stop stopwatch
+//                    result.setResponseCode("OK");
+//                    return result;
+//                }
+//            }
+//        } catch (InterruptedException e) {
+//            result.sampleEnd(); // stop stopwatch
+//            result.setSuccessful(false);
+//            result.setResponseMessage("Exception: " + e);
+//            // get stack trace as a String to return as document data
+//            java.io.StringWriter stringWriter = new java.io.StringWriter();
+//            e.printStackTrace(new java.io.PrintWriter(stringWriter));
+//            result.setResponseData(stringWriter.toString(), null);
+//            result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
+//            result.setResponseCode("FAILED");
+//            return result;
+//        }
     }
 
-    public void close() {
+    public void close(boolean interrupted) {
         try {
+            this.interrupted = interrupted;
             if (null != client && client.isConnected()) {
+                client.unsubscribe(this.topic);
                 client.disconnect();
+                getLogger().info("Client disconnected");
                 client.close();
+                getLogger().info("Client closed");
             }
         } catch (MqttException e) {
             getLogger().error("Error when closing subscriber", e);
@@ -195,8 +237,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
 
         @Override
         public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-            receivedMessageCount.incrementAndGet();
-            mqttMessageStorage.put(mqttMessage);
+            if (null != mqttMessage) {
+                receivedMessageCount.incrementAndGet();
+                mqttMessageStorage.add(mqttMessage.getPayload());
+            }
         }
 
         @Override

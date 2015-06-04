@@ -32,6 +32,7 @@ import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
     public Arguments getDefaultParameters() {
         Arguments defaultParameters = new Arguments();
         defaultParameters.addArgument("HOST", "tcp://localhost:1883");
-        defaultParameters.addArgument("CLIENT_ID", "Hiep");
+        defaultParameters.addArgument("CLIENT_ID", "${__time(YMDHMS)}${__threadNum}");
         defaultParameters.addArgument("TOPIC", "TEST.MQTT");
         defaultParameters.addArgument("AGGREGATE", "1");
         defaultParameters.addArgument("MESSAGE", "This is my test message");
@@ -83,8 +84,11 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 
     public void setupTest(String host, String clientId, String user, String password) {
         try {
-
-            client = new MqttAsyncClient(host, clientId);
+            String generateClientId = MqttAsyncClient.generateClientId();
+            if(generateClientId.length() > 20){
+                generateClientId = generateClientId.substring(0, 20);
+            }
+            client = new MqttAsyncClient(host,  generateClientId, new MemoryPersistence());
             JMeterIMqttPublisherActionListener actionListener = new JMeterIMqttPublisherActionListener();
 
             MqttConnectOptions connectOptions = new MqttConnectOptions();
@@ -92,7 +96,6 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
             connectOptions.setPassword(password.toCharArray());
 
             client.connect(connectOptions, null, actionListener);
-
         } catch (Exception e) {
             getLogger().error(e.getMessage(), e);
         }
@@ -102,23 +105,26 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         SampleResult result = new SampleResult();
         result.sampleStart(); // start stopwatch
         try {
+            while(true){
+                if (null != client && client.isConnected()) {
+                    // Create and configure message
+                    MqttMessage message = new MqttMessage(publishMessage.getBytes());
+                    message.setQos(qos);
+                    message.setRetained(retained);
 
-            while(null != client && client.isConnected()){
-                // Create and configure message
-                MqttMessage message = new MqttMessage(publishMessage.getBytes());
-                message.setQos(qos);
-                message.setRetained(retained);
+                    client.publish(topic, message);
 
-                client.publish(topic, message);
-
-                result.sampleEnd(); // stop stopwatch
-                result.setSuccessful(true);
-                result.setResponseMessage("Sent " + publishedMessageCount.get() + " messages total");
-                result.setResponseCode("OK");
-                publishedMessageCount.incrementAndGet();
+                    result.sampleEnd(); // stop stopwatch
+                    result.setSuccessful(true);
+                    result.setResponseMessage("Sent " + publishedMessageCount.get() + " messages total");
+                    result.setResponseCode("OK");
+                    publishedMessageCount.incrementAndGet();
+                    return result;
+                }
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             result.sampleEnd(); // stop stopwatch
             result.setSuccessful(false);
             result.setResponseMessage("Exception: " + e.toString());
@@ -128,9 +134,9 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
             result.setResponseData(stringWriter.toString(), null);
             result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
             result.setResponseCode("FAILED");
+            return result;
         }
 
-        return result;
     }
 
     @Override
@@ -138,7 +144,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         try {
             if (null != client && client.isConnected()) {
                 client.disconnect();
-                client.close();
+                //client.close();
             }
         } catch (MqttException e) {
             getLogger().error("Error when closing subscriber", e);

@@ -37,6 +37,7 @@ import org.apache.log.Logger;
 public class SubscriberSampler extends BaseMQTTSampler implements
         Interruptible, ThreadListener, TestStateListener {
 
+    private transient volatile boolean interrupted = false;
     private static final long serialVersionUID = 240L;
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final String CLIENT_ID = "mqtt.clientId"; // $NON-NLS-1$
@@ -107,12 +108,13 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 
     @Override
     public boolean interrupt() {
+        boolean oldvalue = interrupted;
+        interrupted = true;   // so we break the loops in SampleWithListener and SampleWithReceive
 
-        System.out.println("Hello interrupt");
         log.debug("Thread ended " + new Date());
         if (this.subscriber != null) {
             try {
-                this.subscriber.close();
+                this.subscriber.close(interrupted);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -120,7 +122,9 @@ public class SubscriberSampler extends BaseMQTTSampler implements
             }
 
         }
-        return false;
+
+
+        return !oldvalue;
     }
 
     @Override
@@ -129,7 +133,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
         log.debug("Thread ended " + new Date());
         if (this.subscriber != null) {
             try {
-                this.subscriber.close();
+                this.subscriber.close(interrupted);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -165,6 +169,7 @@ public class SubscriberSampler extends BaseMQTTSampler implements
 
     @Override
     public void threadStarted() {
+        interrupted = false;
         logThreadStart();
         if (subscriber == null) {
             try {
@@ -203,17 +208,17 @@ public class SubscriberSampler extends BaseMQTTSampler implements
         } else {
             parameters.addArgument("PER_TOPIC", "FALSE");
         }
+
         context = new JavaSamplerContext(parameters);
         subscriber.setupTest(context);
     }
 
     @Override
     public void threadFinished() {
-
         log.debug("Thread ended " + new Date());
         if (this.subscriber != null) {
             try {
-                this.subscriber.close();
+                this.subscriber.close(interrupted);
 
             } catch (Exception e) {
                 e.printStackTrace();
