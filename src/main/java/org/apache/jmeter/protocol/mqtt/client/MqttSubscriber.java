@@ -125,6 +125,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
         byte[] messagePayload = null;
         while(!interrupted && null != mqttMessageStorage && null != receivedMessageCount){
             messagePayload = mqttMessageStorage.poll();
+            receivedMessageCount.incrementAndGet();
             if(messagePayload != null){
                 break;
             }
@@ -238,7 +239,6 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
         @Override
         public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
             if (null != mqttMessage) {
-                receivedMessageCount.incrementAndGet();
                 mqttMessageStorage.add(mqttMessage.getPayload());
             }
         }
