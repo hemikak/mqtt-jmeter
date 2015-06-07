@@ -26,8 +26,8 @@ import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.protocol.mqtt.control.gui.MQTTPublisherGui;
 import org.apache.jmeter.protocol.mqtt.paho.clients.BaseClient;
-import org.apache.jmeter.protocol.mqtt.paho.clients.SimpleAsyncWaitClient;
-import org.apache.jmeter.protocol.mqtt.paho.clients.SimpleClient;
+import org.apache.jmeter.protocol.mqtt.paho.clients.AsyncClient;
+import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
 import org.apache.jmeter.samplers.SampleResult;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
@@ -66,11 +66,11 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 
         // Quality
         if (MQTTPublisherGui.EXACTLY_ONCE.equals(context.getParameter("QOS"))) {
-            qos = 0;
+            qos = 2;
         } else if (MQTTPublisherGui.AT_LEAST_ONCE.equals(context.getParameter("QOS"))) {
             qos = 1;
         } else if (MQTTPublisherGui.AT_MOST_ONCE.equals(context.getParameter("QOS"))) {
-            qos = 2;
+            qos = 0;
         }
         topic = context.getParameter("TOPIC");
         publishMessage = context.getParameter("MESSAGE");
@@ -79,10 +79,10 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         setupTest(host, clientId, context.getParameter("USER"), context.getParameter("PASSWORD"));
     }
 
-    public void setupTest(String host, String clientId, String userName, String password) {
+    public void setupTest(String brokerURL, String clientId, String userName, String password) {
         try {
-            client = new SimpleClient(host, clientId, false, false, userName, password);
-        } catch (Exception e) {
+            client = new BlockingClient(brokerURL, clientId, false, userName, password);
+        } catch (MqttException e) {
             getLogger().error(e.getMessage(), e);
         }
     }
@@ -92,7 +92,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
             try {
                 String host = context.getParameter("HOST");
                 String clientId = context.getParameter("CLIENT_ID");
-                client = new SimpleAsyncWaitClient(host, clientId, false, false, context.getParameter("USER"),
+                client = new AsyncClient(host, clientId, false, context.getParameter("USER"),
                         context.getParameter("PASSWORD"));
             } catch (MqttException e) {
                 e.printStackTrace();
@@ -109,7 +109,6 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
             publishedMessageCount.incrementAndGet();
             return result;
         } catch (MqttException e) {
-            e.printStackTrace();
             result.sampleEnd(); // stop stopwatch
             result.setSuccessful(false);
             result.setResponseMessage("Exception: " + e.toString());
