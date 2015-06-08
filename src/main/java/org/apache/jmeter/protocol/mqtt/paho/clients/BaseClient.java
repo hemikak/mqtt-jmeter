@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  */
 public abstract class BaseClient implements MqttCallback {
-    ConcurrentLinkedQueue<Message> mqttMessageStorage = null;
-    AtomicLong receivedMessageCounter = null;
+    protected ConcurrentLinkedQueue<Message> mqttMessageStorage = null;
+    protected AtomicLong receivedMessageCounter = null;
 
     public abstract void publish(String topicName, int qos, byte[] payload, boolean isRetained) throws MqttException;
     public abstract void subscribe(String topicName, int qos) throws MqttException;

@@ -27,16 +27,18 @@ import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.protocol.mqtt.data.objects.Message;
+import org.apache.jmeter.protocol.mqtt.paho.clients.AsyncClient;
 import org.apache.jmeter.protocol.mqtt.paho.clients.BaseClient;
 import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
+import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.SampleResult;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 
-public class MqttSubscriber extends AbstractJavaSamplerClient implements
-        Serializable {
+public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable {
 
     private static BaseClient client;
     private static final long serialVersionUID = 1L;
@@ -46,41 +48,58 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
     @Override
     public Arguments getDefaultParameters() {
         Arguments defaultParameters = new Arguments();
-        defaultParameters.addArgument("HOST", "tcp://localhost:1883");
-        defaultParameters.addArgument("CLIENT_ID",
-                "${__time(YMDHMS)}${__threadNum}");
-        defaultParameters.addArgument("TOPIC", "TEST.MQTT");
-        defaultParameters.addArgument("AGGREGATE", "100");
-        defaultParameters.addArgument("DURABLE", "false");
+        defaultParameters.addArgument("BROKER_URL", "tcp://localhost:1883");
+
+        try {
+            defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
+        } catch (NoSuchAlgorithmException e) {
+            getLogger().error(e.toString());
+        }
+
+        defaultParameters.addArgument("TOPIC_NAME", "Sample.MQTT.Topic");
+        defaultParameters.addArgument("CLEAN_SESSION", "false");
+        defaultParameters.addArgument("USERNAME", "admin");
+        defaultParameters.addArgument("PASSWORD", "admin");
+        defaultParameters.addArgument("QOS", "AT_MOST_ONCE");
+        defaultParameters.addArgument("CLIENT_TYPE", "false");
         return defaultParameters;
     }
 
     public void setupTest(JavaSamplerContext context) {
-        String host = context.getParameter("HOST");
+        String host = context.getParameter("BROKER_URL");
         String clientId = context.getParameter("CLIENT_ID");
-        String topic = context.getParameter("TOPIC");
-        setupTest(host, clientId, topic, context.getParameter("USER"), context.getParameter("PASSWORD"),
-                Boolean.parseBoolean(context.getParameter("DURABLE")),
-                context.getParameter("QOS"));
+        String topicName = context.getParameter("TOPIC_NAME");
+        boolean isCleanSession = Boolean.parseBoolean(context.getParameter("CLEAN_SESSION"));
+        String username = context.getParameter("USERNAME");
+        String password = context.getParameter("PASSWORD");
+        String qos = context.getParameter("QOS");
+        String client_type = context.getParameter("CLIENT_TYPE");
+        setupTest(host, clientId, topicName, username, password,
+                isCleanSession,
+                qos, client_type);
 
     }
 
     private void setupTest(String brokerURL, String clientId, String topic,
                            String userName, String password, boolean cleanSession,
-                           String quality) {
+                           String qos, String client_type) {
         try {
             // Quality
-            int qos = 0;
-            if (MQTTSubscriberGui.EXACTLY_ONCE.equals(quality)) {
-                qos = 2;
-            } else if (MQTTSubscriberGui.AT_LEAST_ONCE.equals(quality)) {
-                qos = 1;
-            } else if (MQTTSubscriberGui.AT_MOST_ONCE.equals(quality)) {
-                qos = 0;
+            int qualityOfService = 0;
+            if (MQTTSubscriberGui.EXACTLY_ONCE.equals(qos)) {
+                qualityOfService = 2;
+            } else if (MQTTSubscriberGui.AT_LEAST_ONCE.equals(qos)) {
+                qualityOfService = 1;
+            } else if (MQTTSubscriberGui.AT_MOST_ONCE.equals(qos)) {
+                qualityOfService = 0;
             }
 
-            client = new BlockingClient(brokerURL, clientId, cleanSession, userName, password);
-            client.subscribe(topic, qos);
+            if(MQTTSubscriberGui.BLOCKING_CLIENT.equals(client_type)) {
+                client = new BlockingClient(brokerURL, clientId, cleanSession, userName, password);
+            }else if (MQTTSubscriberGui.ASYNC_CLIENT.equals(client_type)){
+                client = new AsyncClient(brokerURL, clientId, cleanSession, userName, password);
+            }
+            client.subscribe(topic, qualityOfService);
         } catch (MqttSecurityException e) {
             getLogger().error("Security related error occurred", e);
         } catch (MqttException e) {
@@ -95,11 +114,12 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements
         Message receivedMessage;
         while (!interrupted && null != client.getReceivedMessages() && null != client.getReceivedMessageCounter()) {
             receivedMessage = client.getReceivedMessages().poll();
-            client.getReceivedMessageCounter().incrementAndGet();
             if (receivedMessage != null) {
+                client.getReceivedMessageCounter().incrementAndGet();
                 result.sampleEnd();
                 result.setSuccessful(true);
-                result.setResponseMessage("Received " + client.getReceivedMessageCounter().get() + " messages." +
+                result.setResponseMessage(lineSeparator + "Received " + client.getReceivedMessageCounter().get() + " " +
+                                          "messages." +
                                           lineSeparator + "Current message QOS : " + receivedMessage.getQos() +
                                           lineSeparator + "Is current message a duplicate : " + receivedMessage.isDup()
                                           + lineSeparator + "Received timestamp of current message : " +

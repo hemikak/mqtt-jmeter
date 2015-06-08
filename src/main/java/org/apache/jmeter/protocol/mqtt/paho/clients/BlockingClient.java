@@ -93,7 +93,7 @@ public class BlockingClient extends BaseClient {
         client.setCallback(this);
 
         // Connect to the MQTT server
-        log.info("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
+        log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' as a blocking client");
         client.connect(conOpt);
         log.info("Connected");
     }

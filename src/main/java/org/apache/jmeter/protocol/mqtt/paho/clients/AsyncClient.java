@@ -101,7 +101,7 @@ public class AsyncClient extends BaseClient {
             // Connect to the MQTT server
             // issue a non-blocking connect and then use the token to wait until the
             // connect completes. An exception is thrown if connect fails.
-            log.info("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
+            log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' as an async client");
             IMqttToken conToken = client.connect(conOpt, null, null);
             conToken.waitForCompletion();
             log.info("Connected");

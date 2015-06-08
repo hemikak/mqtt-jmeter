@@ -6,9 +6,9 @@
  to you under the Apache License, Version 2.0 (the
  "License"); you may not use this file except in compliance
  with the License.  You may obtain a copy of the License at
- 
-    http://www.apache.org/licenses/LICENSE-2.0
- 
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an
  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,59 +16,73 @@
  specific language governing permissions and limitations
  under the License. 
 
-  Copyright 2014 University Joseph Fourier, LIG Laboratory, ERODS Team
+ Copyright 2014 University Joseph Fourier, LIG Laboratory, ERODS Team
 
-*/
+ */
 
 package org.apache.jmeter.protocol.mqtt.control.gui;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
 
 import org.apache.jmeter.gui.util.JLabeledRadioI18N;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.protocol.mqtt.sampler.SubscriberSampler;
+import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.gui.JLabeledPasswordField;
 import org.apache.jorphan.gui.JLabeledTextField;
+import org.apache.jorphan.logging.LoggingManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * This is the GUI for mqtt Subscriber <br>
- *
  */
-public class MQTTSubscriberGui extends AbstractSamplerGui  {
+public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListener {
 
     private static final long serialVersionUID = 240L;
-    public static final String AT_MOST_ONCE = "mqtt_at_most_once";// $NON-NLS-1$
-    public static final String EXACTLY_ONCE = "mqtt_extactly_once";// $NON-NLS-1$
-	public static final String AT_LEAST_ONCE = "mqtt_at_least_once";// $NON-NLS-1$
-    private static final String[] QTYPES_ITEMS = {AT_MOST_ONCE,AT_LEAST_ONCE,EXACTLY_ONCE};
-    private final JLabeledTextField urlField = new JLabeledTextField(JMeterUtils.getResString("mqtt_provider_url")); // $NON-NLS-1$
-    private final JLabeledTextField mqttDestination = new JLabeledTextField(JMeterUtils.getResString("mqtt_topic")); // $NON-NLS-1$
-    private final JLabeledTextField mqttUser = new JLabeledTextField(JMeterUtils.getResString("mqtt_user")); // $NON-NLS-1$
-    private final JLabeledTextField mqttPwd = new JLabeledPasswordField(JMeterUtils.getResString("mqtt_pwd")); // $NON-NLS-1$
-    private final JLabeledTextField timeout =  new JLabeledTextField(JMeterUtils.getResString("mqtt_timeout")); //$NON-NLS-1$
-    private final JLabeledTextField separator =  new JLabeledTextField(JMeterUtils.getResString("mqtt_separator")); //$NON-NLS-1$
-    private final JCheckBox connectionPerTopic = new JCheckBox(JMeterUtils.getResString("mqtt_connection_per_topic"), false); // $NON-NLS-1$
-    private final JCheckBox stopBetweenSamples = new JCheckBox(JMeterUtils.getResString("mqtt_stop_between_samples"), true); // $NON-NLS-1$
-    private final JLabeledTextField clientId = new JLabeledTextField(JMeterUtils.getResString("mqtt_client_id")); //$NON-NLS-1$
-    private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N("mqtt_qos", QTYPES_ITEMS,AT_MOST_ONCE); //$NON-NLS-1$
-    private final JCheckBox cleanSession = new JCheckBox(JMeterUtils.getResString("mqtt_clean_session"), false); // $NON-NLS-1$
+    private static final org.apache.log.Logger log = LoggingManager.getLoggerForClass();
+    private static final String GENERATE_CLIENT_ID_COMMAND = "generate_client_id";
+    private static final String RESET_CREDENTIALS = "reset_credentials";
+
+    public static final String AT_MOST_ONCE = "mqtt_at_most_once";
+    public static final String EXACTLY_ONCE = "mqtt_extactly_once";
+    public static final String AT_LEAST_ONCE = "mqtt_at_least_once";
+
+    private static final String[] QOS_TYPES_ITEMS = {AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE};
+    public static final String BLOCKING_CLIENT = "mqtt_blocking_client";
+    public static final String ASYNC_CLIENT = "mqtt_async_client";
+    private static final String[] CLIENT_TYPES_ITEMS = {BLOCKING_CLIENT, ASYNC_CLIENT};
+
+    private final JLabeledTextField brokerUrlField = new JLabeledTextField(JMeterUtils.getResString("mqtt_provider_url"));
+    private final JLabeledTextField clientId = new JLabeledTextField(JMeterUtils.getResString("mqtt_client_id"));
+    private final JButton generateClientID = new JButton(JMeterUtils.getResString("mqtt_client_id_generator"));
+
+    private final JLabeledTextField mqttDestination = new JLabeledTextField(JMeterUtils.getResString("mqtt_topic"));
+
+    private final JCheckBox cleanSession = new JCheckBox(JMeterUtils.getResString("mqtt_clean_session"), false);
+
+    private final JLabeledTextField mqttUser = new JLabeledTextField(JMeterUtils.getResString("mqtt_user"));
+    private final JLabeledTextField mqttPwd = new JLabeledPasswordField(JMeterUtils.getResString("mqtt_pwd"));
+    private final JButton resetUserNameAndPassword = new JButton(JMeterUtils.getResString
+            ("mqtt_reset_username_password"));
+
+    private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N("mqtt_qos", QOS_TYPES_ITEMS, AT_MOST_ONCE);
+    private final JLabeledRadioI18N typeClientValue = new JLabeledRadioI18N("mqtt_client_types", CLIENT_TYPES_ITEMS,
+            BLOCKING_CLIENT);
+
+
     public MQTTSubscriberGui() {
         init();
     }
 
     @Override
     public String getLabelResource() {
-        return "mqtt_subscriber_title"; // $NON-NLS-1$
+        return "mqtt_subscriber_title";
     }
 
     /**
@@ -90,63 +104,70 @@ public class MQTTSubscriberGui extends AbstractSamplerGui  {
     public void modifyTestElement(TestElement s) {
         SubscriberSampler sampler = (SubscriberSampler) s;
         this.configureTestElement(sampler);
-        sampler.setProviderUrl(urlField.getText());
-        sampler.setDestination(mqttDestination.getText());
-        sampler.setClientID(clientId.getText());
+        sampler.setBrokerUrl(brokerUrlField.getText());
+        sampler.setClientId(clientId.getText());
+        sampler.setTopicName(mqttDestination.getText());
+        sampler.setCleanSession(cleanSession.isSelected());
         sampler.setUsername(mqttUser.getText());
         sampler.setPassword(mqttPwd.getText());
-        sampler.setTimeout(timeout.getText());
-        sampler.setOneConnectionPerTopic(this.connectionPerTopic.isSelected());
-        sampler.setQuality(typeQoSValue.getText());
-        sampler.setCleanSession(cleanSession.isSelected());
-        
+        sampler.setQOS(typeQoSValue.getText());
+        sampler.setClientType(typeClientValue.getText());
+
     }
 
     private void init() {
-        urlField.setText(JMeterUtils.getResString("mqtt_url_default"));
-
+        brokerUrlField.setText(JMeterUtils.getResString("mqtt_url_default"));
         setLayout(new BorderLayout());
         setBorder(makeBorder());
         add(makeTitlePanel(), BorderLayout.NORTH);
         JPanel mainPanel = new VerticalPanel();
-        add(mainPanel, BorderLayout.CENTER);              
+        add(mainPanel, BorderLayout.CENTER);
         JPanel DPanel = new JPanel();
-		DPanel.setLayout(new BoxLayout(DPanel, BoxLayout.X_AXIS));
-		DPanel.add(urlField);
-		DPanel.add(clientId);	
-		JPanel ControlPanel = new VerticalPanel();
-		ControlPanel.add(DPanel);
-		ControlPanel.add(createDestinationPane());
-		ControlPanel.add(cleanSession);
-		ControlPanel.add(createAuthPane());
-		ControlPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),"Connection Info"));
-		mainPanel.add(ControlPanel);	
-		JPanel TPanel = new VerticalPanel();
-		TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
-		timeout.setLayout(new BoxLayout(timeout, BoxLayout.X_AXIS));
-		typeQoSValue.setLayout(new BoxLayout(typeQoSValue, BoxLayout.X_AXIS));
-		TPanel.add(typeQoSValue);
-		TPanel.add(timeout);
-		TPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray), "Option"));
-		mainPanel.add(TPanel);
+        DPanel.setLayout(new BoxLayout(DPanel, BoxLayout.X_AXIS));
+        DPanel.add(brokerUrlField);
+        DPanel.add(clientId);
+        DPanel.add(generateClientID);
+        JPanel ControlPanel = new VerticalPanel();
+        ControlPanel.add(DPanel);
+        ControlPanel.add(createDestinationPane());
+        ControlPanel.add(cleanSession);
+        ControlPanel.add(createAuthPane());
+        ControlPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),
+                "Connection Info"));
+        mainPanel.add(ControlPanel);
+        JPanel TPanel = new VerticalPanel();
+        TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
+        typeQoSValue.setLayout(new BoxLayout(typeQoSValue, BoxLayout.X_AXIS));
+        typeClientValue.setLayout(new BoxLayout(typeClientValue, BoxLayout.X_AXIS));
+        TPanel.add(typeQoSValue);
+        TPanel.add(typeClientValue);
+        TPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray), "Option"));
+        mainPanel.add(TPanel);
+
+        generateClientID.setActionCommand(GENERATE_CLIENT_ID_COMMAND);
+        resetUserNameAndPassword.setActionCommand(RESET_CREDENTIALS);
+        generateClientID.addActionListener(this);
+        resetUserNameAndPassword.addActionListener(this);
+        brokerUrlField.setText(JMeterUtils.getResString("mqtt_url_default"));
 
     }
 
     /**
-	 * 
-	 * @return JPanel Panel with checkbox to choose  user and password
-	 */
-	private Component createAuthPane() {
+     * @return JPanel Panel with checkbox to choose  user and password
+     */
+    private Component createAuthPane() {
         mqttUser.setText(JMeterUtils.getResString("mqtt_user_username"));
         mqttPwd.setText(JMeterUtils.getResString("mqtt_user_password"));
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		panel.add(Box.createHorizontalStrut(10));
-		panel.add(mqttUser);
-		panel.add(Box.createHorizontalStrut(10));
-		panel.add(mqttPwd);
-		return panel;
-	}
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(Box.createHorizontalStrut(10));
+        panel.add(mqttUser);
+        panel.add(Box.createHorizontalStrut(10));
+        panel.add(mqttPwd);
+        panel.add(Box.createHorizontalStrut(10));
+        panel.add(resetUserNameAndPassword);
+        return panel;
+    }
 
     /**
      * the implementation loads the URL and the soap action for the request.
@@ -154,39 +175,43 @@ public class MQTTSubscriberGui extends AbstractSamplerGui  {
     @Override
     public void configure(TestElement el) {
         super.configure(el);
-        SubscriberSampler sampler = (SubscriberSampler) el;  
-        urlField.setText(sampler.getProviderUrl());        
-        mqttDestination.setText(sampler.getDestination());
-        clientId.setText(sampler.getClientId());    
+        SubscriberSampler sampler = (SubscriberSampler) el;
+        brokerUrlField.setText(sampler.getBrokerUrl());
+        clientId.setText(sampler.getClientId());
+        mqttDestination.setText(sampler.getTopicName());
+        cleanSession.setSelected(sampler.isCleanSession());
         mqttUser.setText(sampler.getUsername());
         mqttPwd.setText(sampler.getPassword());
-        timeout.setText(sampler.getTimeout());
+        typeQoSValue.setText(sampler.getQOS());
+        typeClientValue.setText(sampler.getClientType());
     }
 
     @Override
-    public void clearGui(){
+    public void clearGui() {
         super.clearGui();
-        urlField.setText(""); // $NON-NLS-1$
-        mqttDestination.setText(""); // $NON-NLS-1$
-        clientId.setText(""); // $NON-NLS-1$     
-        mqttUser.setText(JMeterUtils.getResString("mqtt_user_username")); // $NON-NLS-1$
-        mqttPwd.setText(JMeterUtils.getResString("mqtt_user_password")); // $NON-NLS-1$
-        timeout.setText(""); // $NON-NLS-1$
-        separator.setText(""); // $NON-NLS-1$
-        stopBetweenSamples.setSelected(false);
     }
 
-	private JPanel createDestinationPane() {
+    private JPanel createDestinationPane() {
         JPanel panel = new VerticalPanel(); //new BorderLayout(3, 0)
-		this.mqttDestination.setLayout((new BoxLayout(mqttDestination, BoxLayout.X_AXIS)));
-		panel.add(mqttDestination);
-		JPanel TPanel = new JPanel();
-		TPanel.setLayout(new BoxLayout(TPanel,BoxLayout.X_AXIS));		
-		this.connectionPerTopic.setLayout(new BoxLayout(connectionPerTopic, BoxLayout.X_AXIS));
-		this.connectionPerTopic.setAlignmentX(CENTER_ALIGNMENT);
-		TPanel.add(connectionPerTopic);
-		TPanel.add(Box.createHorizontalStrut(100));
-		panel.add(TPanel);
-		return panel;
-     }
+        this.mqttDestination.setLayout((new BoxLayout(mqttDestination, BoxLayout.X_AXIS)));
+        panel.add(mqttDestination);
+        JPanel TPanel = new JPanel();
+        TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
+        TPanel.add(Box.createHorizontalStrut(100));
+        panel.add(TPanel);        return panel;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            if (GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {
+                clientId.setText(Utils.UUIDGenerator());
+            } else if(RESET_CREDENTIALS.equals(e.getActionCommand())){
+                mqttUser.setText(JMeterUtils.getResString("mqtt_user_username"));
+                mqttPwd.setText(JMeterUtils.getResString("mqtt_user_password"));
+            }
+        } catch (NoSuchAlgorithmException e1) {
+            log.error(e1.toString());
+        }
+    }
 }
