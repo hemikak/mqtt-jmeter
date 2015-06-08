@@ -66,7 +66,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
     }
 
     public void setupTest(JavaSamplerContext context) {
-        String host = context.getParameter("BROKER_URL");
+        String broker_url = context.getParameter("BROKER_URL");
         String clientId = context.getParameter("CLIENT_ID");
         String topicName = context.getParameter("TOPIC_NAME");
         boolean isCleanSession = Boolean.parseBoolean(context.getParameter("CLEAN_SESSION"));
@@ -74,7 +74,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         String password = context.getParameter("PASSWORD");
         String qos = context.getParameter("QOS");
         String client_type = context.getParameter("CLIENT_TYPE");
-        setupTest(host, clientId, topicName, username, password,
+        setupTest(broker_url, clientId, topicName, username, password,
                 isCleanSession,
                 qos, client_type);
 

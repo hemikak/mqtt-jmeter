@@ -207,6 +207,8 @@ public class SubscriberSampler extends AbstractSampler implements
         if (validate()) {
             context = new JavaSamplerContext(parameters);
             subscriber.setupTest(context);
+        } else {
+            interrupt();
         }
     }
 
@@ -227,33 +229,27 @@ public class SubscriberSampler extends AbstractSampler implements
 
     @Override
     public SampleResult sample(Entry entry) {
-        if (validate()) {
-            return this.subscriber.runTest(context);
-        } else {
-            return null;
-        }
+        return this.subscriber.runTest(context);
     }
 
-
-
     private boolean validate() {
-        if(getBrokerUrl().equals("")){
+        if (getBrokerUrl().equals("")) {
             log.error("The broker url cannot be empty");
             return false;
         }
-        if(getClientId().equals("")){
+        if (getClientId().equals("")) {
             log.error("The client ID cannot be empty");
             return false;
         }
-        if(getTopicName().equals("")){
+        if (getTopicName().equals("")) {
             log.error("The topic name(destination) cannot be empty");
             return false;
         }
-        if(getUsername().equals("")){
+        if (getUsername().equals("")) {
             log.error("The username cannot be empty");
             return false;
         }
-        if(getPassword().equals("")){
+        if (getPassword().equals("")) {
             log.error("The password cannot be empty");
             return false;
         }
