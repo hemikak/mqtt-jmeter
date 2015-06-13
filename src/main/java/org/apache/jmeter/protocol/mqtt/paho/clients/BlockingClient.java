@@ -19,7 +19,6 @@ package org.apache.jmeter.protocol.mqtt.paho.clients;
 import org.apache.jmeter.protocol.mqtt.data.objects.Message;
 import org.apache.jorphan.logging.LoggingManager;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -98,6 +97,9 @@ public class BlockingClient extends BaseClient {
         log.info("Connected");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void disconnect() throws MqttException {
         // Disconnect the client
@@ -105,18 +107,16 @@ public class BlockingClient extends BaseClient {
         log.info("Disconnected");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isConnected() {
         return client.isConnected();
     }
 
     /**
-     * Publish / send a message to an MQTT server
-     *
-     * @param topicName the name of the topic to publish to
-     * @param qos       the quality of service to delivery the message at (0,1,2)
-     * @param payload   the set of bytes to send to the MQTT server
-     * @throws MqttException
+     * {@inheritDoc}
      */
     @Override
     public void publish(String topicName, int qos, byte[] payload, boolean isRetained) throws MqttException {
@@ -132,15 +132,9 @@ public class BlockingClient extends BaseClient {
     }
 
     /**
-     * Subscribe to a topic on an MQTT server
-     * Once subscribed this method waits for the messages to arrive from the server
-     * that match the subscription. It continues listening for messages until the enter key is
-     * pressed.
-     *
-     * @param topicName to subscribe to (can be wild carded)
-     * @param qos       the maximum quality of service to receive messages at for this subscription
-     * @throws MqttException
+     * {@inheritDoc}
      */
+    @Override
     public void subscribe(String topicName, int qos) throws MqttException {
         mqttMessageStorage = new ConcurrentLinkedQueue<Message>();
         receivedMessageCounter = new AtomicLong(0);
@@ -154,26 +148,25 @@ public class BlockingClient extends BaseClient {
         client.subscribe(topicName, qos);
     }
 
-    /****************************************************************/
-    /* Methods to implement the MqttCallback interface              */
-    /****************************************************************/
-
     /**
-     * @see MqttCallback#connectionLost(Throwable)
+     * {@inheritDoc}
      */
+    @Override
     public void connectionLost(Throwable cause) {
         log.info("Connection to " + brokerUrl + " lost!" + cause);
     }
 
     /**
-     * @see MqttCallback#deliveryComplete(IMqttDeliveryToken)
+     * {@inheritDoc}
      */
+    @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
     }
 
     /**
-     * @see MqttCallback#messageArrived(String, MqttMessage)
+     * {@inheritDoc}
      */
+    @Override
     public void messageArrived(String topic, MqttMessage message) throws MqttException {
         Message newMessage = new Message(message);
         mqttMessageStorage.add(newMessage);

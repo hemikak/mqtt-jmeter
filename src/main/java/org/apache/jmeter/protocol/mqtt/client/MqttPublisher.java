@@ -24,10 +24,8 @@ package org.apache.jmeter.protocol.mqtt.client;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.control.gui.MQTTPublisherGui;
-import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
-import org.apache.jmeter.protocol.mqtt.paho.clients.BaseClient;
 import org.apache.jmeter.protocol.mqtt.paho.clients.AsyncClient;
+import org.apache.jmeter.protocol.mqtt.paho.clients.BaseClient;
 import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
 import org.apache.jmeter.protocol.mqtt.utilities.Constants;
 import org.apache.jmeter.protocol.mqtt.utilities.Utils;
@@ -85,17 +83,17 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         String messageInputType = context.getParameter("MESSAGE_INPUT_TYPE");
 
         // Quality
-        if (Constants.mqtt_at_most_once.equals(context.getParameter("QOS"))) {
+        if (Constants.MQTT_AT_MOST_ONCE.equals(context.getParameter("QOS"))) {
             qos = 0;
-        } else if (Constants.mqtt_at_least_once.equals(context.getParameter("QOS"))) {
+        } else if (Constants.MQTT_AT_LEAST_ONCE.equals(context.getParameter("QOS"))) {
             qos = 1;
-        } else if (Constants.mqtt_extactly_once.equals(context.getParameter("QOS"))) {
+        } else if (Constants.MQTT_EXACTLY_ONCE.equals(context.getParameter("QOS"))) {
             qos = 2;
         }
 
-        if (Constants.mqtt_message_input_type_text.equals(messageInputType)) {
+        if (Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT.equals(messageInputType)) {
             publishMessage = context.getParameter("MESSAGE_VALUE");
-        } else if (Constants.mqtt_message_input_type_file.equals(messageInputType)) {
+        } else if (Constants.MQTT_MESSAGE_INPUT_TYPE_FILE.equals(messageInputType)) {
             publishMessage = getFileContent(context.getParameter("MESSAGE_VALUE"));
         }
 
@@ -104,9 +102,9 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 
     public void setupTest(String brokerURL, String clientId, String userName, String password, String clientType) {
         try {
-            if (Constants.mqtt_blocking_client.equals(clientType)) {
+            if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
                 client = new BlockingClient(brokerURL, clientId, false, userName, password);
-            } else if (Constants.mqtt_async_client.equals(clientType)) {
+            } else if (Constants.MQTT_ASYNC_CLIENT.equals(clientType)) {
                 client = new AsyncClient(brokerURL, clientId, false, userName, password);
             }
         } catch (MqttException e) {

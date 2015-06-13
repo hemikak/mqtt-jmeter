@@ -25,16 +25,23 @@ package org.apache.jmeter.protocol.mqtt.control.gui;
 import org.apache.jmeter.gui.util.JLabeledRadioI18N;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.protocol.mqtt.sampler.SubscriberSampler;
+import org.apache.jmeter.protocol.mqtt.utilities.Constants;
 import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
-import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.gui.JLabeledPasswordField;
 import org.apache.jorphan.gui.JLabeledTextField;
 import org.apache.jorphan.logging.LoggingManager;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
@@ -46,43 +53,39 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
 
     private static final long serialVersionUID = 240L;
     private static final org.apache.log.Logger log = LoggingManager.getLoggerForClass();
-    private static final String GENERATE_CLIENT_ID_COMMAND = "generate_client_id";
-    private static final String RESET_CREDENTIALS = "reset_credentials";
 
-    public static final String AT_MOST_ONCE = "mqtt_at_most_once";
-    public static final String EXACTLY_ONCE = "mqtt_extactly_once";
-    public static final String AT_LEAST_ONCE = "mqtt_at_least_once";
+    private static final String[] QOS_TYPES_ITEMS = {Constants.MQTT_AT_MOST_ONCE, Constants.MQTT_AT_LEAST_ONCE, Constants.MQTT_EXACTLY_ONCE};
+    private static final String[] CLIENT_TYPES_ITEMS = {Constants.MQTT_BLOCKING_CLIENT, Constants.MQTT_ASYNC_CLIENT};
 
-    private static final String[] QOS_TYPES_ITEMS = {AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE};
-    public static final String BLOCKING_CLIENT = "mqtt_blocking_client";
-    public static final String ASYNC_CLIENT = "mqtt_async_client";
-    private static final String[] CLIENT_TYPES_ITEMS = {BLOCKING_CLIENT, ASYNC_CLIENT};
+    private final JLabeledTextField brokerUrlField = new JLabeledTextField(Constants.MQTT_PROVIDER_URL);
+    private final JLabeledTextField clientId = new JLabeledTextField(Constants.MQTT_CLIENT_ID);
+    private final JButton generateClientID = new JButton(Constants.MQTT_CLIENT_ID_GENERATOR);
 
-    private final JLabeledTextField brokerUrlField = new JLabeledTextField(JMeterUtils.getResString("mqtt_provider_url"));
-    private final JLabeledTextField clientId = new JLabeledTextField(JMeterUtils.getResString("mqtt_client_id"));
-    private final JButton generateClientID = new JButton(JMeterUtils.getResString("mqtt_client_id_generator"));
+    private final JLabeledTextField mqttDestination = new JLabeledTextField(Constants.MQTT_TOPIC);
 
-    private final JLabeledTextField mqttDestination = new JLabeledTextField(JMeterUtils.getResString("mqtt_topic"));
+    private final JCheckBox cleanSession = new JCheckBox(Constants.MQTT_CLEAN_SESSION, false);
 
-    private final JCheckBox cleanSession = new JCheckBox(JMeterUtils.getResString("mqtt_clean_session"), false);
+    private final JLabeledTextField mqttUser = new JLabeledTextField(Constants.MQTT_USERNAME);
+    private final JLabeledTextField mqttPwd = new JLabeledPasswordField(Constants.MQTT_PASSWORD);
+    private final JButton resetUserNameAndPassword = new JButton(Constants.MQTT_RESET_USERNAME_PASSWORD);
 
-    private final JLabeledTextField mqttUser = new JLabeledTextField(JMeterUtils.getResString("mqtt_user"));
-    private final JLabeledTextField mqttPwd = new JLabeledPasswordField(JMeterUtils.getResString("mqtt_pwd"));
-    private final JButton resetUserNameAndPassword = new JButton(JMeterUtils.getResString
-            ("mqtt_reset_username_password"));
-
-    private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N("mqtt_qos", QOS_TYPES_ITEMS, AT_MOST_ONCE);
-    private final JLabeledRadioI18N typeClientValue = new JLabeledRadioI18N("mqtt_client_types", CLIENT_TYPES_ITEMS,
-            BLOCKING_CLIENT);
-
+    private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N(Constants.MQTT_QOS, QOS_TYPES_ITEMS, Constants.MQTT_AT_MOST_ONCE);
+    private final JLabeledRadioI18N typeClientValue = new JLabeledRadioI18N(Constants.MQTT_CLIENT_TYPES, CLIENT_TYPES_ITEMS,
+                                                                            Constants.MQTT_BLOCKING_CLIENT);
 
     public MQTTSubscriberGui() {
         init();
     }
 
+
     @Override
     public String getLabelResource() {
-        return "mqtt_subscriber_title";
+        return this.getClass().getSimpleName();
+    }
+
+    @Override
+    public String getStaticLabel() {
+        return Constants.MQTT_SUBSCRIBER_TITLE;
     }
 
     /**
@@ -116,8 +119,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
     }
 
     private void init() {
-        brokerUrlField.setText(JMeterUtils.getResString("mqtt_url_default"));
-        setLayout(new BorderLayout());
+        brokerUrlField.setText(Constants.MQTT_URL_DEFAULT);
+                               setLayout(new BorderLayout());
         setBorder(makeBorder());
         add(makeTitlePanel(), BorderLayout.NORTH);
         JPanel mainPanel = new VerticalPanel();
@@ -144,11 +147,11 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         TPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray), "Option"));
         mainPanel.add(TPanel);
 
-        generateClientID.setActionCommand(GENERATE_CLIENT_ID_COMMAND);
-        resetUserNameAndPassword.setActionCommand(RESET_CREDENTIALS);
+        generateClientID.setActionCommand(Constants.GENERATE_CLIENT_ID_COMMAND);
+        resetUserNameAndPassword.setActionCommand(Constants.RESET_CREDENTIALS);
         generateClientID.addActionListener(this);
         resetUserNameAndPassword.addActionListener(this);
-        brokerUrlField.setText(JMeterUtils.getResString("mqtt_url_default"));
+        brokerUrlField.setText(Constants.MQTT_URL_DEFAULT);
 
     }
 
@@ -156,8 +159,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
      * @return JPanel Panel with checkbox to choose  user and password
      */
     private Component createAuthPane() {
-        mqttUser.setText(JMeterUtils.getResString("mqtt_user_username"));
-        mqttPwd.setText(JMeterUtils.getResString("mqtt_user_password"));
+        mqttUser.setText(Constants.MQTT_USER_USERNAME);
+        mqttPwd.setText(Constants.MQTT_USER_PASSWORD);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(Box.createHorizontalStrut(10));
@@ -204,11 +207,11 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            if (GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {
+            if (Constants.GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {
                 clientId.setText(Utils.UUIDGenerator());
-            } else if(RESET_CREDENTIALS.equals(e.getActionCommand())){
-                mqttUser.setText(JMeterUtils.getResString("mqtt_user_username"));
-                mqttPwd.setText(JMeterUtils.getResString("mqtt_user_password"));
+            } else if(Constants.RESET_CREDENTIALS.equals(e.getActionCommand())){
+                mqttUser.setText(Constants.MQTT_USER_USERNAME);
+                mqttPwd.setText(Constants.MQTT_USER_PASSWORD);
             }
         } catch (NoSuchAlgorithmException e1) {
             log.error(e1.toString());

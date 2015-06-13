@@ -4,34 +4,32 @@ package org.apache.jmeter.protocol.mqtt.utilities;
  * Created by hemikak on 6/13/2015.
  */
 public final class Constants {
-    public static final String mqtt_provider_url = "Provider URL";
-    public static final String mqtt_client_id = "Client ID";
-    public static final String mqtt_client_id_generator = "Generate ID";
-    public static final String mqtt_topic = "Topic";
-    public static final String mqtt_send_as_retained_msg = "Retained";
-    public static final String mqtt_user = "User";
-    public static final String mqtt_pwd = "Password";
-    public static final String mqtt_reset_username_password = "Reset Credentials";
-    public static final String mqtt_qos = "Quality of service";
-    public static final String mqtt_client_types = "Client Type";
-    public static final String mqtt_message_input_type = "Message Input Type";
-    public static final String mqtt_text_area = "Text Message";
-    public static final String mqtt_file = "File";
-    public static final String mqtt_publisher = "MQTT Publisher";
-    public static final String mqtt_url_default = "tcp://localhost:1883";
-
-
-    public static final String mqtt_at_most_once = "At most once [0]";
-    public static final String mqtt_extactly_once = "Exactly once [2]";
-    public static final String mqtt_at_least_once = "At least once [1]";
-    public static final String mqtt_blocking_client = "Blocking";
-    public static final String mqtt_async_client = "Async";
-    public static final String mqtt_message_input_type_file = "File Input";
-    public static final String mqtt_message_input_type_text = "Text Input";
-    public static final String mqtt_user_username = "admin";
-    public static final String mqtt_user_password = "admin";
-
-
-
-
+    public static final String GENERATE_CLIENT_ID_COMMAND = "generate_client_id";
+    public static final String MQTT_ASYNC_CLIENT = "mqtt_async_client";
+    public static final String MQTT_AT_LEAST_ONCE = "mqtt_at_least_once";
+    public static final String MQTT_AT_MOST_ONCE = "mqtt_at_most_once";
+    public static final String MQTT_BLOCKING_CLIENT = "mqtt_blocking_client";
+    public static final String MQTT_CLEAN_SESSION = "Clean Session";
+    public static final String MQTT_CLIENT_ID = "Client ID";
+    public static final String MQTT_CLIENT_ID_GENERATOR = "Generate ID";
+    public static final String MQTT_CLIENT_TYPES = "mqtt_client_types";
+    public static final String MQTT_EXACTLY_ONCE = "mqtt_exactly_once";
+    public static final String MQTT_FILE = "File";
+    public static final String MQTT_MESSAGE_INPUT_TYPE = "mqtt_message_input_type";
+    public static final String MQTT_MESSAGE_INPUT_TYPE_FILE = "mqtt_message_input_type_file";
+    public static final String MQTT_MESSAGE_INPUT_TYPE_TEXT = "mqtt_message_input_type_text";
+    public static final String MQTT_PASSWORD = "Password";
+    public static final String MQTT_PROVIDER_URL = "Provider URL";
+    public static final String MQTT_PUBLISHER_TITLE = "MQTT Publisher";
+    public static final String MQTT_QOS = "mqtt_qos";
+    public static final String MQTT_RESET_USERNAME_PASSWORD = "Reset Credentials";
+    public static final String MQTT_SEND_AS_RETAINED_MSG = "Retained";
+    public static final String MQTT_SUBSCRIBER_TITLE = "MQTT Subscriber";
+    public static final String MQTT_TEXT_AREA = "Text Message";
+    public static final String MQTT_TOPIC = "Topic";
+    public static final String MQTT_URL_DEFAULT = "tcp://localhost:1883";
+    public static final String MQTT_USER_PASSWORD = "admin";
+    public static final String MQTT_USER_USERNAME = "admin";
+    public static final String MQTT_USERNAME = "Username";
+    public static final String RESET_CREDENTIALS = "reset_credentials";
 }

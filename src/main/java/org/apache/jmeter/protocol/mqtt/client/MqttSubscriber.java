@@ -25,11 +25,11 @@ package org.apache.jmeter.protocol.mqtt.client;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.control.gui.MQTTSubscriberGui;
 import org.apache.jmeter.protocol.mqtt.data.objects.Message;
 import org.apache.jmeter.protocol.mqtt.paho.clients.AsyncClient;
 import org.apache.jmeter.protocol.mqtt.paho.clients.BaseClient;
 import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
+import org.apache.jmeter.protocol.mqtt.utilities.Constants;
 import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.SampleResult;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -43,7 +43,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
     private static BaseClient client;
     private static final long serialVersionUID = 1L;
     private boolean interrupted;
-    private String lineSeparator = System.getProperty("line.separator");
+    private static final String lineSeparator = System.getProperty("line.separator");
 
     @Override
     public Arguments getDefaultParameters() {
@@ -86,17 +86,17 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         try {
             // Quality
             int qualityOfService = 0;
-            if (MQTTSubscriberGui.EXACTLY_ONCE.equals(qos)) {
+            if (Constants.MQTT_EXACTLY_ONCE.equals(qos)) {
                 qualityOfService = 2;
-            } else if (MQTTSubscriberGui.AT_LEAST_ONCE.equals(qos)) {
+            } else if (Constants.MQTT_AT_LEAST_ONCE.equals(qos)) {
                 qualityOfService = 1;
-            } else if (MQTTSubscriberGui.AT_MOST_ONCE.equals(qos)) {
+            } else if (Constants.MQTT_AT_MOST_ONCE.equals(qos)) {
                 qualityOfService = 0;
             }
 
-            if(MQTTSubscriberGui.BLOCKING_CLIENT.equals(client_type)) {
+            if(Constants.MQTT_BLOCKING_CLIENT.equals(client_type)) {
                 client = new BlockingClient(brokerURL, clientId, cleanSession, userName, password);
-            }else if (MQTTSubscriberGui.ASYNC_CLIENT.equals(client_type)){
+            }else if (Constants.MQTT_ASYNC_CLIENT.equals(client_type)){
                 client = new AsyncClient(brokerURL, clientId, cleanSession, userName, password);
             }
             client.subscribe(topic, qualityOfService);

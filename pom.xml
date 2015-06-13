@@ -35,6 +35,7 @@
 	<properties>
 		<jmeter-version>2.10</jmeter-version>
 		<eclipse.paho.mqtt.version>0.4.0</eclipse.paho.mqtt.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<repositories>

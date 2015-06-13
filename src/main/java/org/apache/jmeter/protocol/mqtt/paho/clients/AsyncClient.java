@@ -16,21 +16,18 @@
 
 package org.apache.jmeter.protocol.mqtt.paho.clients;
 
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.jmeter.protocol.mqtt.data.objects.Message;
 import org.apache.jorphan.logging.LoggingManager;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A sample application that demonstrates how to use the Paho MQTT v3.1 Client API in
@@ -112,13 +109,9 @@ public class AsyncClient extends BaseClient {
     }
 
     /**
-     * Publish / send a message to an MQTT server
-     *
-     * @param topicName the name of the topic to publish to
-     * @param qos       the quality of service to delivery the message at (0,1,2)
-     * @param payload   the set of bytes to send to the MQTT server
-     * @throws MqttException
+     * {@inheritDoc}
      */
+    @Override
     public void publish(String topicName, int qos, byte[] payload, boolean isRetained) throws MqttException {
         // Construct the message to send
         MqttMessage message = new MqttMessage(payload);
@@ -135,15 +128,9 @@ public class AsyncClient extends BaseClient {
     }
 
     /**
-     * Subscribe to a topic on an MQTT server
-     * Once subscribed this method waits for the messages to arrive from the server
-     * that match the subscription. It continues listening for messages until the enter key is
-     * pressed.
-     *
-     * @param topicName to subscribe to (can be wild carded)
-     * @param qos       the maximum quality of service to receive messages at for this subscription
-     * @throws MqttException
+     * {@inheritDoc}
      */
+    @Override
     public void subscribe(String topicName, int qos) throws MqttException {
         mqttMessageStorage = new ConcurrentLinkedQueue<Message>();
         receivedMessageCounter = new AtomicLong(0);
@@ -158,8 +145,9 @@ public class AsyncClient extends BaseClient {
     }
 
     /**
-     * @see MqttCallback#connectionLost(Throwable)
+     * {@inheritDoc}
      */
+    @Override
     public void connectionLost(Throwable cause) {
         // Called when the connection to the server has been lost.
         // An application may choose to implement reconnection
@@ -168,8 +156,9 @@ public class AsyncClient extends BaseClient {
     }
 
     /**
-     * @see MqttCallback#deliveryComplete(IMqttDeliveryToken)
+     * {@inheritDoc}
      */
+    @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         // Called when a message has been delivered to the
         // server. The token passed in here is the same one
@@ -195,13 +184,18 @@ public class AsyncClient extends BaseClient {
     }
 
     /**
-     * @see MqttCallback#messageArrived(String, MqttMessage)
+     * {@inheritDoc}
      */
+    @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws MqttException {
         Message newMessage = new Message(mqttMessage);
         mqttMessageStorage.add(newMessage);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void disconnect() throws MqttException {
         // Disconnect the client
         // Issue the disconnect and then use the token to wait until
@@ -212,6 +206,10 @@ public class AsyncClient extends BaseClient {
         log.info("Disconnected");
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isConnected() {
         return client.isConnected();
     }
