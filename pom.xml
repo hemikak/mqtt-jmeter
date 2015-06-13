@@ -26,11 +26,11 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.liglab.erods.jmeter.mqtt</groupId>
+	<groupId>hemika.jmeter.mqtt</groupId>
 	<artifactId>mqtt-jmeter</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Apache JMeter :: MQTT Injector</name>
-	<description>MQTT Injector for Apache JMeter</description>
+	<name>Apache JMeter : MQTT Plugin</name>
+	<description>MQTT Plugin for Apache JMeter</description>
 
 	<properties>
 		<jmeter-version>2.10</jmeter-version>
