@@ -40,10 +40,6 @@ public class Message {
         return retained;
     }
 
-    public void setRetained(boolean retained) {
-        this.retained = retained;
-    }
-
     public boolean isDup() {
         return dup;
     }

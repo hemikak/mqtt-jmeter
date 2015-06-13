@@ -1,23 +1,7 @@
-/**
- Licensed to the Apache Software Foundation (ASF) under one
- or more contributor license agreements.  See the NOTICE file
- distributed with this work for additional information
- regarding copyright ownership.  The ASF licenses this file
- to you under the Apache License, Version 2.0 (the
- "License"); you may not use this file except in compliance
- with the License.  You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing,
- software distributed under the License is distributed on an
- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied.  See the License for the
- specific language governing permissions and limitations
- under the License. 
-
- Copyright 2014 University Joseph Fourier, LIG Laboratory, ERODS Team
-
+/*
+ * Author : Hemika Yasinda Kodikara
+ *
+ * Copyright (c) 2015.
  */
 
 package org.apache.jmeter.protocol.mqtt.client;
@@ -40,11 +24,15 @@ import java.security.NoSuchAlgorithmException;
 
 public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable {
 
-    private static BaseClient client;
+    private BaseClient client;
     private static final long serialVersionUID = 1L;
-    private boolean interrupted;
     private static final String lineSeparator = System.getProperty("line.separator");
+    private boolean interrupted;
+    private boolean exceptionOccurred = false;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Arguments getDefaultParameters() {
         Arguments defaultParameters = new Arguments();
@@ -65,6 +53,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         return defaultParameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setupTest(JavaSamplerContext context) {
         String broker_url = context.getParameter("BROKER_URL");
         String clientId = context.getParameter("CLIENT_ID");
@@ -75,15 +67,27 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         String qos = context.getParameter("QOS");
         String client_type = context.getParameter("CLIENT_TYPE");
         setupTest(broker_url, clientId, topicName, username, password,
-                isCleanSession,
-                qos, client_type);
+                  isCleanSession,
+                  qos, client_type);
 
     }
 
+    /**
+     * Starts up a new MQTT client.
+     * @param brokerURL The broker url for the client to connect.
+     * @param clientId The client ID.
+     * @param topic The topic name to subscribe.
+     * @param userName The username of the user.
+     * @param password The password of the user.
+     * @param cleanSession Use a clean session subscriber.
+     * @param qos The quality of service value.
+     * @param client_type The client to be either blocking or async.
+     */
     private void setupTest(String brokerURL, String clientId, String topic,
                            String userName, String password, boolean cleanSession,
                            String qos, String client_type) {
         try {
+            exceptionOccurred = false;
             // Quality
             int qualityOfService = 0;
             if (Constants.MQTT_EXACTLY_ONCE.equals(qos)) {
@@ -94,22 +98,36 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
                 qualityOfService = 0;
             }
 
-            if(Constants.MQTT_BLOCKING_CLIENT.equals(client_type)) {
+            if (Constants.MQTT_BLOCKING_CLIENT.equals(client_type)) {
                 client = new BlockingClient(brokerURL, clientId, cleanSession, userName, password);
-            }else if (Constants.MQTT_ASYNC_CLIENT.equals(client_type)){
+            } else if (Constants.MQTT_ASYNC_CLIENT.equals(client_type)) {
                 client = new AsyncClient(brokerURL, clientId, cleanSession, userName, password);
             }
             client.subscribe(topic, qualityOfService);
         } catch (MqttSecurityException e) {
             getLogger().error("Security related error occurred", e);
+            exceptionOccurred = true;
         } catch (MqttException e) {
             getLogger().error("Non-security related error occurred", e);
+            exceptionOccurred = true;
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public SampleResult runTest(JavaSamplerContext context) {
         SampleResult result = new SampleResult();
         result.sampleStart();
+
+        if (exceptionOccurred) {
+            result.setSuccessful(false);
+            result.setResponseMessage("Client is not connected.");
+            result.sampleEnd();
+            result.setResponseCode("FAILED");
+            return result;
+        }
 
         Message receivedMessage;
         while (!interrupted && null != client.getReceivedMessages() && null != client.getReceivedMessageCounter()) {
@@ -133,7 +151,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         }
 
         result.setSuccessful(false);
-        result.setResponseMessage("Error occurred while receiving messages. Received " + client
+        result.setResponseMessage("Client has been stopped or an error occurred while receiving messages. Received " + client
                 .getReceivedMessageCounter().get() + " valid messages.");
         result.sampleEnd();
         result.setResponseCode("FAILED");
@@ -141,6 +159,11 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
     }
 
+    /**
+     * Disconnected the client.
+     *
+     * @param interrupted Whether the thread was interrupted.
+     */
     public void close(boolean interrupted) {
         try {
             this.interrupted = interrupted;
