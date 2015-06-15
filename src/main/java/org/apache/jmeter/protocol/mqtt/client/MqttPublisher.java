@@ -1,26 +1,12 @@
 /**
- Licensed to the Apache Software Foundation (ASF) under one
- or more contributor license agreements.  See the NOTICE file
- distributed with this work for additional information
- regarding copyright ownership.  The ASF licenses this file
- to you under the Apache License, Version 2.0 (the
- "License"); you may not use this file except in compliance
- with the License.  You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing,
- software distributed under the License is distributed on an
- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied.  See the License for the
- specific language governing permissions and limitations
- under the License. 
-
- Copyright 2014 University Joseph Fourier, LIG Laboratory, ERODS Team
-
+ * Author : Hemika Yasinda Kodikara
+ *
+ * Copyright (c) 2015.
  */
+
 package org.apache.jmeter.protocol.mqtt.client;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
@@ -30,7 +16,6 @@ import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
 import org.apache.jmeter.protocol.mqtt.utilities.Constants;
 import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.SampleResult;
-import org.apache.jorphan.io.TextFile;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.Closeable;
@@ -40,18 +25,20 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-public class MqttPublisher extends AbstractJavaSamplerClient implements
-        Serializable, Closeable {
+public class MqttPublisher extends AbstractJavaSamplerClient implements Serializable, Closeable {
 
-    private static BaseClient client;
-    private static int qos = 0;
-    private static String topicName = "";
-    private static String publishMessage = "";
-    private static boolean retained;
-    private static AtomicInteger publishedMessageCount = new AtomicInteger(0);
-
+    private BaseClient client;
+    private int qos = 0;
+    private String topicName = StringUtils.EMPTY;
+    private String publishMessage = StringUtils.EMPTY;
+    private boolean retained;
+    private AtomicInteger publishedMessageCount = new AtomicInteger(0);
+    private static final String lineSeparator = System.getProperty("line.separator");
     private static final long serialVersionUID = 1L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Arguments getDefaultParameters() {
         Arguments defaultParameters = new Arguments();
@@ -72,6 +59,10 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         return defaultParameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setupTest(JavaSamplerContext context) {
         String brokerURL = context.getParameter("BROKER_URL");
         String clientId = context.getParameter("CLIENT_ID");
@@ -94,13 +85,23 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         if (Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT.equals(messageInputType)) {
             publishMessage = context.getParameter("MESSAGE_VALUE");
         } else if (Constants.MQTT_MESSAGE_INPUT_TYPE_FILE.equals(messageInputType)) {
-            publishMessage = getFileContent(context.getParameter("MESSAGE_VALUE"));
+            publishMessage = Utils.getFileContent(context.getParameter("MESSAGE_VALUE"));
         }
 
         setupTest(brokerURL, clientId, username, password, client_type);
     }
 
-    public void setupTest(String brokerURL, String clientId, String userName, String password, String clientType) {
+    /**
+     * Starts up a new MQTT client.
+     *
+     * @param brokerURL  The broker url for the client to connect.
+     * @param clientId   The client ID.
+     * @param userName   The username of the user.
+     * @param password   The password of the user.
+     * @param clientType The client to be either blocking or async.
+     */
+    public void setupTest(String brokerURL, String clientId, String userName, String password,
+                          String clientType) {
         try {
             if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
                 client = new BlockingClient(brokerURL, clientId, false, userName, password);
@@ -112,6 +113,10 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public SampleResult runTest(JavaSamplerContext context) {
         if (!client.isConnected()) {
             setupTest(context);
@@ -129,11 +134,11 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         } catch (MqttException e) {
             result.sampleEnd(); // stop stopwatch
             result.setSuccessful(false);
-            result.setResponseMessage("Exception: " + e.toString());
             // get stack trace as a String to return as document data
             java.io.StringWriter stringWriter = new java.io.StringWriter();
             e.printStackTrace(new java.io.PrintWriter(stringWriter));
             result.setResponseData(stringWriter.toString(), null);
+            result.setResponseMessage("Unable publish messages." + lineSeparator + "Exception: " + e.toString());
             result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
             result.setResponseCode("FAILED");
             return result;
@@ -141,6 +146,9 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
         try {
@@ -148,17 +156,5 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements
         } catch (MqttException e) {
             getLogger().error("Error when closing subscriber", e);
         }
-    }
-
-    /**
-     * The implementation uses TextFile to load the contents of the file and
-     * returns a string.
-     *
-     * @param path path to the file to read in
-     * @return the contents of the file
-     */
-    public String getFileContent(String path) {
-        TextFile tf = new TextFile(path);
-        return tf.getText();
     }
 }

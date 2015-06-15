@@ -1,7 +1,12 @@
+/**
+ * Author : Hemika Yasinda Kodikara
+ *
+ * Copyright (c) 2015.
+ */
 package org.apache.jmeter.protocol.mqtt.utilities;
 
 /**
- * Created by hemikak on 6/13/2015.
+ * Constants class for mqtt plugin.
  */
 public final class Constants {
     public static final String GENERATE_CLIENT_ID_COMMAND = "generate_client_id";

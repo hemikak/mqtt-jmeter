@@ -1,29 +1,14 @@
 /**
- Licensed to the Apache Software Foundation (ASF) under one
- or more contributor license agreements.  See the NOTICE file
- distributed with this work for additional information
- regarding copyright ownership.  The ASF licenses this file
- to you under the Apache License, Version 2.0 (the
- "License"); you may not use this file except in compliance
- with the License.  You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing,
- software distributed under the License is distributed on an
- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied.  See the License for the
- specific language governing permissions and limitations
- under the License. 
-
- Copyright 2014 University Joseph Fourier, LIG Laboratory, ERODS Team
-
+ * Author : Hemika Yasinda Kodikara
+ *
+ * Copyright (c) 2015.
  */
 
 package org.apache.jmeter.protocol.mqtt.sampler;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.protocol.mqtt.client.MqttSubscriber;
@@ -124,6 +109,9 @@ public class SubscriberSampler extends AbstractSampler implements
         super();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean interrupt() {
         boolean oldValue = interrupted;
@@ -145,6 +133,9 @@ public class SubscriberSampler extends AbstractSampler implements
         return !oldValue;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void testEnded() {
         log.debug("Thread ended " + new Date());
@@ -160,15 +151,24 @@ public class SubscriberSampler extends AbstractSampler implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void testEnded(String arg0) {
         testEnded();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void testStarted() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void testStarted(String arg0) {
         testStarted();
@@ -182,6 +182,9 @@ public class SubscriberSampler extends AbstractSampler implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void threadStarted() {
         interrupted = false;
@@ -212,6 +215,9 @@ public class SubscriberSampler extends AbstractSampler implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void threadFinished() {
         log.debug("Thread ended " + new Date());
@@ -227,29 +233,36 @@ public class SubscriberSampler extends AbstractSampler implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SampleResult sample(Entry entry) {
         return this.subscriber.runTest(context);
     }
 
+    /**
+     * Validates parameters
+     * @return true if valid parameters, else false
+     */
     private boolean validate() {
-        if (getBrokerUrl().equals("")) {
+        if (StringUtils.isBlank(getBrokerUrl())) {
             log.error("The broker url cannot be empty");
             return false;
         }
-        if (getClientId().equals("")) {
+        if (StringUtils.isBlank(getClientId())) {
             log.error("The client ID cannot be empty");
             return false;
         }
-        if (getTopicName().equals("")) {
+        if (StringUtils.isBlank(getTopicName())) {
             log.error("The topic name(destination) cannot be empty");
             return false;
         }
-        if (getUsername().equals("")) {
+        if (StringUtils.isBlank(getUsername())) {
             log.error("The username cannot be empty");
             return false;
         }
-        if (getPassword().equals("")) {
+        if (StringUtils.isBlank(getPassword())) {
             log.error("The password cannot be empty");
             return false;
         }

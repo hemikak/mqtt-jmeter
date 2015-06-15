@@ -1,4 +1,4 @@
-/*
+/**
  * Author : Hemika Yasinda Kodikara
  *
  * Copyright (c) 2015.
@@ -28,7 +28,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
     private static final long serialVersionUID = 1L;
     private static final String lineSeparator = System.getProperty("line.separator");
     private boolean interrupted;
-    private boolean exceptionOccurred = false;
+    private MqttException exceptionOccurred = null;
 
     /**
      * {@inheritDoc}
@@ -74,20 +74,21 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
     /**
      * Starts up a new MQTT client.
-     * @param brokerURL The broker url for the client to connect.
-     * @param clientId The client ID.
-     * @param topic The topic name to subscribe.
-     * @param userName The username of the user.
-     * @param password The password of the user.
+     *
+     * @param brokerURL    The broker url for the client to connect.
+     * @param clientId     The client ID.
+     * @param topic        The topic name to subscribe.
+     * @param userName     The username of the user.
+     * @param password     The password of the user.
      * @param cleanSession Use a clean session subscriber.
-     * @param qos The quality of service value.
-     * @param client_type The client to be either blocking or async.
+     * @param qos          The quality of service value.
+     * @param client_type  The client to be either blocking or async.
      */
     private void setupTest(String brokerURL, String clientId, String topic,
                            String userName, String password, boolean cleanSession,
                            String qos, String client_type) {
         try {
-            exceptionOccurred = false;
+            exceptionOccurred = null;
             // Quality
             int qualityOfService = 0;
             if (Constants.MQTT_EXACTLY_ONCE.equals(qos)) {
@@ -106,10 +107,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
             client.subscribe(topic, qualityOfService);
         } catch (MqttSecurityException e) {
             getLogger().error("Security related error occurred", e);
-            exceptionOccurred = true;
+            exceptionOccurred = e;
         } catch (MqttException e) {
             getLogger().error("Non-security related error occurred", e);
-            exceptionOccurred = true;
+            exceptionOccurred = e;
         }
     }
 
@@ -121,9 +122,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         SampleResult result = new SampleResult();
         result.sampleStart();
 
-        if (exceptionOccurred) {
+        if (null != exceptionOccurred) {
             result.setSuccessful(false);
-            result.setResponseMessage("Client is not connected.");
+            result.setResponseMessage("Client is not connected." + lineSeparator + exceptionOccurred.toString());
+            result.setResponseData(exceptionOccurred.toString().getBytes());
             result.sampleEnd();
             result.setResponseCode("FAILED");
             return result;

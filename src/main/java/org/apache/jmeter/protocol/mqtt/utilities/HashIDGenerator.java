@@ -1,16 +1,32 @@
+/**
+ * Author : Hemika Yasinda Kodikara
+ *
+ * Copyright (c) 2015.
+ */
+
 package org.apache.jmeter.protocol.mqtt.utilities;
 
-import java.util.*;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+
+/**
+ * A UUID Generator.
+ */
 public class HashIDGenerator {
 
     private static final String DEFAULT_ALPHABET = "xcS4F6h89aUbideAI7tkynuopqrXCgTE5GBKHLMjfRsz";
     private static final int[] PRIMES = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43};
     private static final int[] SEPS_INDICES = {0, 4, 8, 12};
 
-    private String salt_ = "";
+    private String salt_ = StringUtils.EMPTY;
 
-    private String alphabet_ = "";
+    private String alphabet_ = StringUtils.EMPTY;
 
     private int minHashLength_;
 

@@ -1,3 +1,9 @@
+/**
+ * Author : Hemika Yasinda Kodikara
+ *
+ * Copyright (c) 2015.
+ */
+
 package org.apache.jmeter.protocol.mqtt.data.objects;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
