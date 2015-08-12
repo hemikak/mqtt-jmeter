@@ -6,6 +6,8 @@
 
 package org.apache.jmeter.protocol.mqtt.paho.clients;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.protocol.mqtt.data.objects.Message;
 import org.apache.jorphan.logging.LoggingManager;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -15,6 +17,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
+import java.io.File;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -61,8 +64,12 @@ public class BlockingClient extends BaseClient {
         // stored until the message has been delivered to the server.
         //..a real application ought to store them somewhere
         // where they are not likely to get deleted or tampered with
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
+        //String tmpDir = System.getProperty("java.io.tmpdir");
+
+        String testPlanFile = GuiPackage.getInstance().getTestPlanFile();
+        String testPlanFileDir = FilenameUtils.getFullPathNoEndSeparator(testPlanFile);
+        testPlanFileDir = testPlanFileDir + File.separator + "tmp" + File.separator + clientId + File.separator + Thread.currentThread().getId();
+        MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(testPlanFileDir);
 
         // Construct the connection options object that contains connection parameters
         // such as cleanSession and LWT

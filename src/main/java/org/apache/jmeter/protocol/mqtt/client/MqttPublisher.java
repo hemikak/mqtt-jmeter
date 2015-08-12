@@ -73,6 +73,12 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
         String client_type = context.getParameter("CLIENT_TYPE");
         String messageInputType = context.getParameter("MESSAGE_INPUT_TYPE");
 
+        // Generating client ID if empty
+        if (StringUtils.isEmpty(clientId)){
+            clientId  = System.currentTimeMillis() + "." + System.getProperty("user.name");
+            clientId = clientId.substring(0, 23);
+        }
+
         // Quality
         if (Constants.MQTT_AT_MOST_ONCE.equals(context.getParameter("QOS"))) {
             qos = 0;

@@ -6,6 +6,7 @@
 
 package org.apache.jmeter.protocol.mqtt.client;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
@@ -16,11 +17,14 @@ import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
 import org.apache.jmeter.protocol.mqtt.utilities.Constants;
 import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.SampleResult;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable {
 
@@ -67,8 +71,8 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         String qos = context.getParameter("QOS");
         String client_type = context.getParameter("CLIENT_TYPE");
         setupTest(broker_url, clientId, topicName, username, password,
-                  isCleanSession,
-                  qos, client_type);
+                isCleanSession,
+                qos, client_type);
 
     }
 
@@ -89,6 +93,13 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
                            String qos, String client_type) {
         try {
             exceptionOccurred = null;
+
+            // Generating client ID if empty
+            if (StringUtils.isEmpty(clientId)){
+                clientId  = System.currentTimeMillis() + "." + System.getProperty("user.name");
+                clientId = clientId.substring(0, 23);
+            }
+
             // Quality
             int qualityOfService = 0;
             if (Constants.MQTT_EXACTLY_ONCE.equals(qos)) {
@@ -112,6 +123,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
             getLogger().error("Non-security related error occurred", e);
             exceptionOccurred = e;
         }
+//        catch (NoSuchAlgorithmException e) {
+//            getLogger().error("Unable to generate client ID", e);
+//            exceptionOccurred = new MqttException(e);
+//        }
     }
 
     /**
@@ -153,8 +168,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         }
 
         result.setSuccessful(false);
-        result.setResponseMessage("Client has been stopped or an error occurred while receiving messages. Received " + client
-                .getReceivedMessageCounter().get() + " valid messages.");
+        result.setResponseMessage("Client has been stopped or an error occurred while receiving messages. Received "  + " valid messages.");
         result.sampleEnd();
         result.setResponseCode("FAILED");
         return result;

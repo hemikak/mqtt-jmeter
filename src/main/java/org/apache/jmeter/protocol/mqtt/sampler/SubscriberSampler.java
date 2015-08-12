@@ -250,10 +250,6 @@ public class SubscriberSampler extends AbstractSampler implements
             log.error("The broker url cannot be empty");
             return false;
         }
-        if (StringUtils.isBlank(getClientId())) {
-            log.error("The client ID cannot be empty");
-            return false;
-        }
         if (StringUtils.isBlank(getTopicName())) {
             log.error("The topic name(destination) cannot be empty");
             return false;
