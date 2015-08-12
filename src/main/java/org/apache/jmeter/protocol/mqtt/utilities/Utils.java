@@ -17,15 +17,15 @@ import java.security.SecureRandom;
 public class Utils {
 
     /**
-     * Creates a UUID.
+     * Creates a UUID. The UUID is modified to avoid "ClientId longer than 23 characters" for MQTT.
      *
      * @return A UUID as a string.
      * @throws NoSuchAlgorithmException
      */
     public static String UUIDGenerator() throws NoSuchAlgorithmException {
-        SecureRandom prng = SecureRandom.getInstance("SHA1PRNG");
-        HashIDGenerator hashIDGenerator = new HashIDGenerator("jmeter-mqtt", 5);
-        return hashIDGenerator.encrypt(prng.nextLong());
+        String clientId = System.currentTimeMillis() + "." + System.getProperty("user.name");
+        clientId = clientId.substring(0, 23);
+        return clientId;
     }
 
     /**
