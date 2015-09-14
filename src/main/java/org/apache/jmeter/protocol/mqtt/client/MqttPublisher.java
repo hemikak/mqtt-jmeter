@@ -67,7 +67,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
         String brokerURL = context.getParameter("BROKER_URL");
         String clientId = context.getParameter("CLIENT_ID");
         topicName = context.getParameter("TOPIC_NAME");
-        retained = Boolean.parseBoolean(context.getParameter("CLEAN_SESSION"));
+        retained = Boolean.parseBoolean(context.getParameter("MESSAGE_RETAINED"));
         String username = context.getParameter("USERNAME");
         String password = context.getParameter("PASSWORD");
         String client_type = context.getParameter("CLIENT_TYPE");
@@ -75,8 +75,10 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 
         // Generating client ID if empty
         if (StringUtils.isEmpty(clientId)){
-            clientId  = System.currentTimeMillis() + "." + System.getProperty("user.name");
-            clientId = clientId.substring(0, 23);
+            clientId  = System.nanoTime() + "." + System.getProperty("user.name");
+            if (clientId.length() > 23) {
+                clientId = clientId.substring(0, 23);
+            }
         }
 
         // Quality

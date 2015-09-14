@@ -96,8 +96,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
 
             // Generating client ID if empty
             if (StringUtils.isEmpty(clientId)){
-                clientId  = System.currentTimeMillis() + "." + System.getProperty("user.name");
-                clientId = clientId.substring(0, 23);
+                clientId  = System.nanoTime() + "." + System.getProperty("user.name");
+                if (clientId.length() > 23) {
+                    clientId = clientId.substring(0, 23);
+                }
             }
 
             // Quality
