@@ -64,11 +64,14 @@ public class BlockingClient extends BaseClient {
         // stored until the message has been delivered to the server.
         //..a real application ought to store them somewhere
         // where they are not likely to get deleted or tampered with
-        //String tmpDir = System.getProperty("java.io.tmpdir");
+        String testPlanFileDir = System.getProperty("java.io.tmpdir");
 
-        String testPlanFile = GuiPackage.getInstance().getTestPlanFile();
-        String testPlanFileDir = FilenameUtils.getFullPathNoEndSeparator(testPlanFile);
-        testPlanFileDir = testPlanFileDir + File.separator + "tmp" + File.separator + clientId + File.separator + Thread.currentThread().getId();
+        if (null != GuiPackage.getInstance()) {
+            String testPlanFile = GuiPackage.getInstance().getTestPlanFile();
+            testPlanFileDir = FilenameUtils.getFullPathNoEndSeparator(testPlanFile);
+            testPlanFileDir = testPlanFileDir + File.separator + "tmp" + File.separator + clientId + File.separator + Thread.currentThread().getId();
+        }
+
         MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(testPlanFileDir);
 
         // Construct the connection options object that contains connection parameters

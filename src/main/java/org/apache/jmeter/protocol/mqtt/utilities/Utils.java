@@ -24,7 +24,9 @@ public class Utils {
      */
     public static String UUIDGenerator() throws NoSuchAlgorithmException {
         String clientId = System.currentTimeMillis() + "." + System.getProperty("user.name");
-        clientId = clientId.substring(0, 23);
+        if (clientId.length() > 23) {
+            clientId = clientId.substring(0, 23);
+        }
         return clientId;
     }
 
