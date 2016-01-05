@@ -15,6 +15,9 @@ Get the source code, go to mqtt-jmeter folder and and use the command maven in t
 Once its done, go to the target folder and run the following command in cmd/terminal with the path to JMeter. Example :
 
 	./installer.sh ~/Documents/wso2/mb/clients/apache-jmeter-2.13/
+
+Or
+
     installer.bat C:\apache-jmeter-2.13
 
 This would do the following tasks...
