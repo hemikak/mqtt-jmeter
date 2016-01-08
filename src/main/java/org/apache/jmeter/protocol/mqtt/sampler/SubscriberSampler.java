@@ -209,6 +209,7 @@ public class SubscriberSampler extends AbstractSampler implements
 
         if (validate()) {
             context = new JavaSamplerContext(parameters);
+            subscriber.setNameLabel(getName());
             subscriber.setupTest(context);
         } else {
             interrupt();
@@ -254,15 +255,6 @@ public class SubscriberSampler extends AbstractSampler implements
             log.error("The topic name(destination) cannot be empty");
             return false;
         }
-        if (StringUtils.isBlank(getUsername())) {
-            log.error("The username cannot be empty");
-            return false;
-        }
-        if (StringUtils.isBlank(getPassword())) {
-            log.error("The password cannot be empty");
-            return false;
-        }
-
         return true;
     }
 

@@ -60,6 +60,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
     private final JLabeledTextField mqttDestination = new JLabeledTextField(Constants.MQTT_TOPIC);
 
     private final JCheckBox retained = new JCheckBox(Constants.MQTT_SEND_AS_RETAINED_MSG, false);
+    private final JCheckBox cleanSession = new JCheckBox(Constants.MQTT_CLEAN_SESSION, false);
 
     private final JLabeledTextField mqttUser = new JLabeledTextField(Constants.MQTT_USERNAME);
     private final JLabeledTextField mqttPwd = new JLabeledPasswordField(Constants.MQTT_PASSWORD);
@@ -118,6 +119,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
         sampler.setClientId(clientId.getText());
         sampler.setTopicName(mqttDestination.getText());
         sampler.setMessageRetained(retained.isSelected());
+        sampler.setCleanSession(cleanSession.isSelected());
         sampler.setUsername(mqttUser.getText());
         sampler.setPassword(mqttPwd.getText());
         sampler.setQOS(typeQoSValue.getText());
@@ -146,6 +148,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
         ControlPanel.add(DPanel);
         ControlPanel.add(createDestinationPane());
         ControlPanel.add(retained);
+        ControlPanel.add(cleanSession);
         ControlPanel.add(createAuthPane());
         ControlPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),
                                                                 "Connection Info"));
@@ -220,6 +223,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements
         clientId.setText(sampler.getClientId());
         mqttDestination.setText(sampler.getTopicName());
         retained.setSelected(sampler.isMessageRetained());
+        cleanSession.setSelected(sampler.isCleanSession());
         mqttUser.setText(sampler.getUsername());
         mqttPwd.setText(sampler.getPassword());
         typeQoSValue.setText(sampler.getQOS());

@@ -82,10 +82,10 @@ public class AsyncClient extends BaseClient {
             // such as cleanSession and LWT
             MqttConnectOptions conOpt = new MqttConnectOptions();
             conOpt.setCleanSession(cleanSession);
-            if (password != null) {
+            if (password != null && !password.isEmpty()) {
                 conOpt.setPassword(password.toCharArray());
             }
-            if (userName != null) {
+            if (userName != null && !userName.isEmpty()) {
                 conOpt.setUserName(userName);
             }
 
@@ -98,7 +98,7 @@ public class AsyncClient extends BaseClient {
             // Connect to the MQTT server
             // issue a non-blocking connect and then use the token to wait until the
             // connect completes. An exception is thrown if connect fails.
-            log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' as an async client");
+            log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' and cleanSession is " + String.valueOf(cleanSession) + " as an async clientt");
             IMqttToken conToken = client.connect(conOpt, null, null);
             conToken.waitForCompletion();
             log.info("Connected");

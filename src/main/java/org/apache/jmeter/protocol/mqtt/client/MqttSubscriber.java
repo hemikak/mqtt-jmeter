@@ -33,6 +33,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
     private static final String lineSeparator = System.getProperty("line.separator");
     private boolean interrupted;
     private MqttException exceptionOccurred = null;
+    private String nameLabel = "Subscriber";
 
     /**
      * {@inheritDoc}
@@ -137,6 +138,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
     @Override
     public SampleResult runTest(JavaSamplerContext context) {
         SampleResult result = new SampleResult();
+        result.setSampleLabel(getNameLabel());
         result.sampleStart();
 
         if (null != exceptionOccurred) {
@@ -192,4 +194,12 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
             getLogger().error("Error when closing subscriber", e);
         }
     }
+
+	public String getNameLabel() {
+		return nameLabel;
+	}
+
+	public void setNameLabel(String nameLabel) {
+		this.nameLabel = nameLabel;
+	}
 }

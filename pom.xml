@@ -13,7 +13,7 @@
 
 	<properties>
 		<jmeter-version>2.10</jmeter-version>
-		<eclipse.paho.mqtt.version>0.4.0</eclipse.paho.mqtt.version>
+		<eclipse.paho.mqtt.version>1.0.2</eclipse.paho.mqtt.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <apache.commons.lang3>3.4</apache.commons.lang3>
 	</properties>
@@ -42,7 +42,7 @@
 
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
-			<artifactId>mqtt-client</artifactId>
+			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
 			<version>${eclipse.paho.mqtt.version}</version>
 		</dependency>
 
