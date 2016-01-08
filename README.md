@@ -26,13 +26,13 @@ Hemika
 
 # Pull request sbeaulie
 Modified the code to enable a connection to the AWS IoT MQTT broker
--Update dependency to <eclipse.paho.mqtt.version>1.0.2</eclipse.paho.mqtt.version>
--Allow for blank username and password in publisher and subscriber
--Added clean session checkbox in publisher gui instead of hard coded false
+* Update dependency to <eclipse.paho.mqtt.version>1.0.2</eclipse.paho.mqtt.version>
+* Allow for blank username and password in publisher and subscriber
+* Added clean session checkbox in publisher gui instead of hard coded false
 
 Note: AWS IoT needs you to use qos=1, isRetained = false, Clean session = true, username and password blank
 You also need to load the certificates and keys in the JVM, scope is outside of this document
 
 other minor changes:
--Fix a NPE with the Util UUID generator substring method
--set the Sampler label name in the response sampler for nicer display in View Result Tree Listeners
+* Fix a NPE with the Util UUID generator substring method
+* set the Sampler label name in the response sampler for nicer display in View Result Tree Listeners
