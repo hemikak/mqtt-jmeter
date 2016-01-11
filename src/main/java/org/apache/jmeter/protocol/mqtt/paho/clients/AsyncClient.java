@@ -59,10 +59,10 @@ public class AsyncClient extends BaseClient {
      * @throws MqttException
      */
     public AsyncClient(String brokerUrl, String clientId, boolean cleanSession,
-                       String userName, String password) throws MqttException {
+                       String userName, String password, int keepAlive) throws MqttException {
         this.brokerUrl = brokerUrl;
 
-        String testPlanFileDir = System.getProperty("java.io.tmpdir") + File.separator + "tmp" + File.separator +
+        String testPlanFileDir = System.getProperty("java.io.tmpdir") + File.separator + "mqtt" + File.separator +
                                                             clientId + File.separator + Thread.currentThread().getId();
         MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(testPlanFileDir);
 
@@ -78,6 +78,9 @@ public class AsyncClient extends BaseClient {
                 conOpt.setUserName(userName);
             }
 
+            // Setting keep alive time
+            conOpt.setKeepAliveInterval(keepAlive);
+
             // Construct a non-blocking MQTT client instance
             client = new MqttAsyncClient(this.brokerUrl, clientId, dataStore);
 
@@ -87,7 +90,8 @@ public class AsyncClient extends BaseClient {
             // Connect to the MQTT server
             // issue a non-blocking connect and then use the token to wait until the
             // connect completes. An exception is thrown if connect fails.
-            log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' and cleanSession is " + String.valueOf(cleanSession) + " as an async clientt");
+            log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' and cleanSession " +
+                     "                                  is " + String.valueOf(cleanSession) + " as an async clientt");
             IMqttToken conToken = client.connect(conOpt, null, null);
             conToken.waitForCompletion();
             log.info("Connected");

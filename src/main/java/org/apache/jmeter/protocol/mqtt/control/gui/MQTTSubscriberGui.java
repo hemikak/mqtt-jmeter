@@ -48,6 +48,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
 
     private final JCheckBox cleanSession = new JCheckBox(Constants.MQTT_CLEAN_SESSION, false);
 
+    private final JLabeledTextField mqttKeepAlive = new JLabeledTextField(Constants.MQTT_KEEP_ALIVE);
+
     private final JLabeledTextField mqttUser = new JLabeledTextField(Constants.MQTT_USERNAME);
     private final JLabeledTextField mqttPwd = new JLabeledPasswordField(Constants.MQTT_PASSWORD);
     private final JButton resetUserNameAndPassword = new JButton(Constants.MQTT_RESET_USERNAME_PASSWORD);
@@ -94,6 +96,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         sampler.setClientId(clientId.getText());
         sampler.setTopicName(mqttDestination.getText());
         sampler.setCleanSession(cleanSession.isSelected());
+        sampler.setKeepAlive(mqttKeepAlive.getText());
         sampler.setUsername(mqttUser.getText());
         sampler.setPassword(mqttPwd.getText());
         sampler.setQOS(typeQoSValue.getText());
@@ -117,6 +120,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         ControlPanel.add(DPanel);
         ControlPanel.add(createDestinationPane());
         ControlPanel.add(cleanSession);
+        ControlPanel.add(createKeepAlivePane());
         ControlPanel.add(createAuthPane());
         ControlPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),
                 "Connection Info"));
@@ -166,6 +170,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         clientId.setText(sampler.getClientId());
         mqttDestination.setText(sampler.getTopicName());
         cleanSession.setSelected(sampler.isCleanSession());
+        mqttKeepAlive.setText(sampler.getKeepAlive());
         mqttUser.setText(sampler.getUsername());
         mqttPwd.setText(sampler.getPassword());
         typeQoSValue.setText(sampler.getQOS());
@@ -185,6 +190,18 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
         TPanel.add(Box.createHorizontalStrut(100));
         panel.add(TPanel);        return panel;
+    }
+
+    private JPanel createKeepAlivePane() {
+        JPanel panel = new VerticalPanel(); //new BorderLayout(3, 0)
+        this.mqttKeepAlive.setLayout((new BoxLayout(mqttKeepAlive, BoxLayout.X_AXIS)));
+        panel.add(mqttKeepAlive);
+        JPanel TPanel = new JPanel();
+        TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
+        TPanel.add(Box.createHorizontalStrut(100));
+        panel.add(TPanel);
+        mqttKeepAlive.setText(Constants.MQTT_KEEP_ALIVE_DEFAULT);
+        return panel;
     }
 
     @Override
