@@ -32,6 +32,7 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
     private static final String TOPIC_NAME = "mqtt.topic.name";
     private static final String RETAINED = "mqtt.message.retained";
     private static final String CLEAN_SESSION = "mqtt.clean.session";
+    private static final String KEEP_ALIVE = "mqtt.keep.alive";
     private static final String USERNAME = "mqtt.auth.username";
     private static final String PASSWORD = "mqtt.auth.password";
     private static final String QOS = "mqtt.qos";
@@ -54,6 +55,14 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
 
     public boolean isMessageRetained() {
         return getPropertyAsBoolean(RETAINED);
+    }
+
+    public boolean isCleanSession() {
+        return getPropertyAsBoolean(CLEAN_SESSION);
+    }
+
+    public String getKeepAlive() {
+        return getPropertyAsString(KEEP_ALIVE);
     }
 
     public String getUsername() {
@@ -96,6 +105,12 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
     public void setMessageRetained(boolean isCleanSession) {
         setProperty(RETAINED, isCleanSession);
     }
+
+    public void setCleanSession(boolean isCleanSession) {
+        setProperty(CLEAN_SESSION, isCleanSession);
+    }
+
+    public void setKeepAlive(String keepAlive) {setProperty(KEEP_ALIVE, keepAlive);}
 
     public void setUsername(String username) {
         setProperty(USERNAME, username.trim());
@@ -154,6 +169,7 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
         parameters.addArgument("TOPIC_NAME", getTopicName());
         parameters.addArgument("MESSAGE_RETAINED", Boolean.toString(isMessageRetained()));
         parameters.addArgument("CLEAN_SESSION", Boolean.toString(isCleanSession()));
+        parameters.addArgument("KEEP_ALIVE", getKeepAlive());
         parameters.addArgument("USERNAME", getUsername());
         parameters.addArgument("PASSWORD", getPassword());
         parameters.addArgument("QOS", getQOS());
@@ -227,13 +243,5 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
     @Override
     public SampleResult sample(Entry entry) {
         return this.publisher.runTest(context);
-    }
-
-	public void setCleanSession(boolean isCleanSession) {
-		setProperty(CLEAN_SESSION, isCleanSession);
-	}
-
-    public boolean isCleanSession() {
-        return getPropertyAsBoolean(CLEAN_SESSION);
     }
 }

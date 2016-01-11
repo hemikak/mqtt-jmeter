@@ -34,6 +34,7 @@ public class SubscriberSampler extends AbstractSampler implements
     private static final String CLIENT_ID = "mqtt.client.id";
     private static final String TOPIC_NAME = "mqtt.topic.name";
     private static final String CLEAN_SESSION = "mqtt.clean.session";
+    private static final String KEEP_ALIVE = "mqtt.keep.alive";
     private static final String USERNAME = "mqtt.auth.username";
     private static final String PASSWORD = "mqtt.auth.password";
     private static final String QOS = "mqtt.qos";
@@ -54,6 +55,10 @@ public class SubscriberSampler extends AbstractSampler implements
 
     public boolean isCleanSession() {
         return getPropertyAsBoolean(CLEAN_SESSION);
+    }
+
+    public String getKeepAlive() {
+        return getPropertyAsString(KEEP_ALIVE);
     }
 
     public String getUsername() {
@@ -88,6 +93,8 @@ public class SubscriberSampler extends AbstractSampler implements
     public void setCleanSession(boolean isCleanSession) {
         setProperty(CLEAN_SESSION, isCleanSession);
     }
+
+    public void setKeepAlive(String keepAlive) {setProperty(KEEP_ALIVE, keepAlive);}
 
     public void setUsername(String username) {
         setProperty(USERNAME, username.trim());
@@ -202,6 +209,7 @@ public class SubscriberSampler extends AbstractSampler implements
         parameters.addArgument("CLIENT_ID", getClientId());
         parameters.addArgument("TOPIC_NAME", getTopicName());
         parameters.addArgument("CLEAN_SESSION", Boolean.toString(isCleanSession()));
+        parameters.addArgument("KEEP_ALIVE", getKeepAlive());
         parameters.addArgument("USERNAME", getUsername());
         parameters.addArgument("PASSWORD", getPassword());
         parameters.addArgument("QOS", getQOS());

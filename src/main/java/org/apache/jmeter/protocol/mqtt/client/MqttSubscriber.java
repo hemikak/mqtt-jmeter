@@ -38,11 +38,10 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
     public Arguments getDefaultParameters() {
         Arguments defaultParameters = new Arguments();
         defaultParameters.addArgument("BROKER_URL", "tcp://localhost:1883");
-
         defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
-
         defaultParameters.addArgument("TOPIC_NAME", "Sample.MQTT.Topic");
         defaultParameters.addArgument("CLEAN_SESSION", "false");
+        defaultParameters.addArgument("KEEP_ALIVE", "0");
         defaultParameters.addArgument("USERNAME", "admin");
         defaultParameters.addArgument("PASSWORD", "admin");
         defaultParameters.addArgument("QOS", "AT_MOST_ONCE");
@@ -59,13 +58,29 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         String clientId = context.getParameter("CLIENT_ID");
         String topicName = context.getParameter("TOPIC_NAME");
         boolean isCleanSession = Boolean.parseBoolean(context.getParameter("CLEAN_SESSION"));
+        int keepAlive = Integer.parseInt(context.getParameter("KEEP_ALIVE"));
         String username = context.getParameter("USERNAME");
         String password = context.getParameter("PASSWORD");
-        String qos = context.getParameter("QOS");
         String client_type = context.getParameter("CLIENT_TYPE");
+
+        // Generating client ID if empty
+        if (StringUtils.isEmpty(clientId)) {
+            clientId = Utils.UUIDGenerator();
+        }
+
+        // Quality
+        int qos = 0;
+        if (Constants.MQTT_AT_MOST_ONCE.equals(context.getParameter("QOS"))) {
+            qos = 0;
+        } else if (Constants.MQTT_AT_LEAST_ONCE.equals(context.getParameter("QOS"))) {
+            qos = 1;
+        } else if (Constants.MQTT_EXACTLY_ONCE.equals(context.getParameter("QOS"))) {
+            qos = 2;
+        }
+
         setupTest(broker_url, clientId, topicName, username, password,
                 isCleanSession,
-                qos, client_type);
+                qos, client_type, keepAlive);
 
     }
 
@@ -83,34 +98,16 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
      */
     private void setupTest(String brokerURL, String clientId, String topic,
                            String userName, String password, boolean cleanSession,
-                           String qos, String client_type) {
+                           int qos, String client_type, int keepAlive) {
         try {
             exceptionOccurred = null;
 
-            // Generating client ID if empty
-            if (StringUtils.isEmpty(clientId)){
-                clientId  = System.nanoTime() + "." + System.getProperty("user.name");
-                if (clientId.length() > 23) {
-                    clientId = clientId.substring(0, 23);
-                }
-            }
-
-            // Quality
-            int qualityOfService = 0;
-            if (Constants.MQTT_EXACTLY_ONCE.equals(qos)) {
-                qualityOfService = 2;
-            } else if (Constants.MQTT_AT_LEAST_ONCE.equals(qos)) {
-                qualityOfService = 1;
-            } else if (Constants.MQTT_AT_MOST_ONCE.equals(qos)) {
-                qualityOfService = 0;
-            }
-
             if (Constants.MQTT_BLOCKING_CLIENT.equals(client_type)) {
-                client = new BlockingClient(brokerURL, clientId, cleanSession, userName, password);
+                client = new BlockingClient(brokerURL, clientId, cleanSession, userName, password, keepAlive);
             } else if (Constants.MQTT_ASYNC_CLIENT.equals(client_type)) {
-                client = new AsyncClient(brokerURL, clientId, cleanSession, userName, password);
+                client = new AsyncClient(brokerURL, clientId, cleanSession, userName, password, keepAlive);
             }
-            client.subscribe(topic, qualityOfService);
+            client.subscribe(topic, qos);
         } catch (MqttSecurityException e) {
             getLogger().error("Security related error occurred", e);
             exceptionOccurred = e;

@@ -43,12 +43,11 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
     public Arguments getDefaultParameters() {
         Arguments defaultParameters = new Arguments();
         defaultParameters.addArgument("BROKER_URL", "tcp://localhost:1883");
-
         defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
-
         defaultParameters.addArgument("TOPIC_NAME", "Sample.MQTT.Topic");
         defaultParameters.addArgument("MESSAGE_RETAINED", "false");
         defaultParameters.addArgument("CLEAN_SESSION", "false");
+        defaultParameters.addArgument("KEEP_ALIVE", "0");
         defaultParameters.addArgument("USERNAME", "admin");
         defaultParameters.addArgument("PASSWORD", "admin");
         defaultParameters.addArgument("QOS", "AT_MOST_ONCE");
@@ -66,17 +65,15 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
         topicName = context.getParameter("TOPIC_NAME");
         retained = Boolean.parseBoolean(context.getParameter("MESSAGE_RETAINED"));
         boolean isCleanSession = Boolean.parseBoolean(context.getParameter("CLEAN_SESSION"));
+        int keepAlive = Integer.parseInt(context.getParameter("KEEP_ALIVE"));
         String username = context.getParameter("USERNAME");
         String password = context.getParameter("PASSWORD");
         String client_type = context.getParameter("CLIENT_TYPE");
         String messageInputType = context.getParameter("MESSAGE_INPUT_TYPE");
 
         // Generating client ID if empty
-        if (StringUtils.isEmpty(clientId)){
-            clientId  = System.nanoTime() + "." + System.getProperty("user.name");
-            if (clientId.length() > 23) {
-                clientId = clientId.substring(0, 23);
-            }
+        if (StringUtils.isEmpty(clientId)) {
+            clientId = Utils.UUIDGenerator();
         }
 
         // Quality
@@ -94,7 +91,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
             publishMessage = Utils.getFileContent(context.getParameter("MESSAGE_VALUE"));
         }
 
-        setupTest(brokerURL, clientId, isCleanSession, username, password, client_type);
+        setupTest(brokerURL, clientId, isCleanSession, username, password, client_type, keepAlive);
     }
 
     /**
@@ -108,12 +105,12 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
      * @param clientType The client to be either blocking or async.
      */
     public void setupTest(String brokerURL, String clientId, boolean isCleanSession, String userName, String password,
-                          String clientType) {
+                          String clientType, int keepAlive) {
         try {
             if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
-                client = new BlockingClient(brokerURL, clientId, isCleanSession, userName, password);
+                client = new BlockingClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             } else if (Constants.MQTT_ASYNC_CLIENT.equals(clientType)) {
-                client = new AsyncClient(brokerURL, clientId, isCleanSession, userName, password);
+                client = new AsyncClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             }
         } catch (MqttException e) {
             getLogger().error(e.getMessage(), e);

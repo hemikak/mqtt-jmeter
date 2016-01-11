@@ -56,9 +56,9 @@ public class BlockingClient extends BaseClient {
      * @throws MqttException
      */
     public BlockingClient(String brokerUrl, String clientId, boolean cleanSession, String userName,
-                          String password) throws MqttException {
+                          String password, int keepAlive) throws MqttException {
         this.brokerUrl = brokerUrl;
-        String testPlanFileDir = System.getProperty("java.io.tmpdir") + File.separator + "tmp" + File.separator +
+        String testPlanFileDir = System.getProperty("java.io.tmpdir") + File.separator + "mqtt" + File.separator +
                                  clientId + File.separator + Thread.currentThread().getId();
         MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(testPlanFileDir);
 
@@ -73,6 +73,9 @@ public class BlockingClient extends BaseClient {
             conOpt.setUserName(userName);
         }
 
+        // Setting keep alive time
+        conOpt.setKeepAliveInterval(keepAlive);
+
         // Construct an MQTT blocking mode client
         client = new MqttClient(this.brokerUrl, clientId, dataStore);
 
@@ -80,7 +83,8 @@ public class BlockingClient extends BaseClient {
         client.setCallback(this);
 
         // Connect to the MQTT server
-        log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' and cleanSession is " + String.valueOf(cleanSession) + " as a blocking client");
+        log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' and cleanSession is " +
+                                                                String.valueOf(cleanSession) + " as a blocking client");
         client.connect(conOpt);
         log.info("Connected");
     }
