@@ -64,24 +64,21 @@ public class BlockingClient extends BaseClient {
         // stored until the message has been delivered to the server.
         //..a real application ought to store them somewhere
         // where they are not likely to get deleted or tampered with
-        String testPlanFileDir = System.getProperty("java.io.tmpdir");
+        //String tmpDir = System.getProperty("java.io.tmpdir");
 
-        if (null != GuiPackage.getInstance()) {
-            String testPlanFile = GuiPackage.getInstance().getTestPlanFile();
-            testPlanFileDir = FilenameUtils.getFullPathNoEndSeparator(testPlanFile);
-            testPlanFileDir = testPlanFileDir + File.separator + "tmp" + File.separator + clientId + File.separator + Thread.currentThread().getId();
-        }
-
+        String testPlanFile = GuiPackage.getInstance().getTestPlanFile();
+        String testPlanFileDir = FilenameUtils.getFullPathNoEndSeparator(testPlanFile);
+        testPlanFileDir = testPlanFileDir + File.separator + "tmp" + File.separator + clientId + File.separator + Thread.currentThread().getId();
         MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(testPlanFileDir);
 
         // Construct the connection options object that contains connection parameters
         // such as cleanSession and LWT
         MqttConnectOptions conOpt = new MqttConnectOptions();
         conOpt.setCleanSession(cleanSession);
-        if (password != null) {
+        if (password != null && !password.isEmpty()) {
             conOpt.setPassword(password.toCharArray());
         }
-        if (userName != null) {
+        if (userName != null && !userName.isEmpty()) {
             conOpt.setUserName(userName);
         }
 
@@ -92,7 +89,7 @@ public class BlockingClient extends BaseClient {
         client.setCallback(this);
 
         // Connect to the MQTT server
-        log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' as a blocking client");
+        log.info("Connecting to " + brokerUrl + " with client ID '" + client.getClientId() + "' and cleanSession is " + String.valueOf(cleanSession) + " as a blocking client");
         client.connect(conOpt);
         log.info("Connected");
     }
@@ -125,6 +122,7 @@ public class BlockingClient extends BaseClient {
         message.setRetained(isRetained);
         message.setQos(qos);
 
+        log.info("Trying to publish message to topic:" + topicName);
         // Send the message to the server, control is not returned until
         // it has been delivered to the server meeting the specified
         // quality of service.

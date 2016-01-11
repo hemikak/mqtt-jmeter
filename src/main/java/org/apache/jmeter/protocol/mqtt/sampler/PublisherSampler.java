@@ -31,6 +31,7 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
     private static final String CLIENT_ID = "mqtt.client.id";
     private static final String TOPIC_NAME = "mqtt.topic.name";
     private static final String RETAINED = "mqtt.message.retained";
+    private static final String CLEAN_SESSION = "mqtt.clean.session";
     private static final String USERNAME = "mqtt.auth.username";
     private static final String PASSWORD = "mqtt.auth.password";
     private static final String QOS = "mqtt.qos";
@@ -152,6 +153,7 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
         parameters.addArgument("CLIENT_ID", getClientId());
         parameters.addArgument("TOPIC_NAME", getTopicName());
         parameters.addArgument("MESSAGE_RETAINED", Boolean.toString(isMessageRetained()));
+        parameters.addArgument("CLEAN_SESSION", Boolean.toString(isCleanSession()));
         parameters.addArgument("USERNAME", getUsername());
         parameters.addArgument("PASSWORD", getPassword());
         parameters.addArgument("QOS", getQOS());
@@ -160,6 +162,7 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
         parameters.addArgument("MESSAGE_VALUE", getMessageValue());
 
         this.context = new JavaSamplerContext(parameters);
+        this.publisher.setNameLabel(getName());
         this.publisher.setupTest(this.context);
     }
 
@@ -224,5 +227,13 @@ public class PublisherSampler extends AbstractSampler implements ThreadListener,
     @Override
     public SampleResult sample(Entry entry) {
         return this.publisher.runTest(context);
+    }
+
+	public void setCleanSession(boolean isCleanSession) {
+		setProperty(CLEAN_SESSION, isCleanSession);
+	}
+
+    public boolean isCleanSession() {
+        return getPropertyAsBoolean(CLEAN_SESSION);
     }
 }

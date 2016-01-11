@@ -6,6 +6,7 @@
 
 package org.apache.jmeter.protocol.mqtt.utilities;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jorphan.io.TextFile;
 
 import java.security.NoSuchAlgorithmException;
@@ -24,9 +25,7 @@ public class Utils {
      */
     public static String UUIDGenerator() throws NoSuchAlgorithmException {
         String clientId = System.currentTimeMillis() + "." + System.getProperty("user.name");
-        if (clientId.length() > 23) {
-            clientId = clientId.substring(0, 23);
-        }
+        clientId = StringUtils.substring(clientId,0,23);
         return clientId;
     }
 

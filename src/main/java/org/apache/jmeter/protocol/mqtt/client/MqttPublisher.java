@@ -33,6 +33,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
     private String publishMessage = StringUtils.EMPTY;
     private boolean retained;
     private AtomicInteger publishedMessageCount = new AtomicInteger(0);
+    private String nameLabel = "Publisher";
     private static final String lineSeparator = System.getProperty("line.separator");
     private static final long serialVersionUID = 1L;
 
@@ -52,6 +53,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
 
         defaultParameters.addArgument("TOPIC_NAME", "Sample.MQTT.Topic");
         defaultParameters.addArgument("MESSAGE_RETAINED", "false");
+        defaultParameters.addArgument("CLEAN_SESSION", "false");
         defaultParameters.addArgument("USERNAME", "admin");
         defaultParameters.addArgument("PASSWORD", "admin");
         defaultParameters.addArgument("QOS", "AT_MOST_ONCE");
@@ -68,6 +70,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
         String clientId = context.getParameter("CLIENT_ID");
         topicName = context.getParameter("TOPIC_NAME");
         retained = Boolean.parseBoolean(context.getParameter("MESSAGE_RETAINED"));
+        boolean isCleanSession = Boolean.parseBoolean(context.getParameter("CLEAN_SESSION"));
         String username = context.getParameter("USERNAME");
         String password = context.getParameter("PASSWORD");
         String client_type = context.getParameter("CLIENT_TYPE");
@@ -96,7 +99,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
             publishMessage = Utils.getFileContent(context.getParameter("MESSAGE_VALUE"));
         }
 
-        setupTest(brokerURL, clientId, username, password, client_type);
+        setupTest(brokerURL, clientId, isCleanSession, username, password, client_type);
     }
 
     /**
@@ -104,17 +107,18 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
      *
      * @param brokerURL  The broker url for the client to connect.
      * @param clientId   The client ID.
+     * @param isCleanSession The clean session value to true or false
      * @param userName   The username of the user.
      * @param password   The password of the user.
      * @param clientType The client to be either blocking or async.
      */
-    public void setupTest(String brokerURL, String clientId, String userName, String password,
+    public void setupTest(String brokerURL, String clientId, boolean isCleanSession, String userName, String password,
                           String clientType) {
         try {
             if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
-                client = new BlockingClient(brokerURL, clientId, false, userName, password);
+                client = new BlockingClient(brokerURL, clientId, isCleanSession, userName, password);
             } else if (Constants.MQTT_ASYNC_CLIENT.equals(clientType)) {
-                client = new AsyncClient(brokerURL, clientId, false, userName, password);
+                client = new AsyncClient(brokerURL, clientId, isCleanSession, userName, password);
             }
         } catch (MqttException e) {
             getLogger().error(e.getMessage(), e);
@@ -126,18 +130,18 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
      */
     @Override
     public SampleResult runTest(JavaSamplerContext context) {
-        if (!client.isConnected()) {
+        if (client==null || !client.isConnected()) {
             setupTest(context);
         }
         SampleResult result = new SampleResult();
+        result.setSampleLabel(getNameLabel());
         result.sampleStart();
         try {
             client.publish(topicName, qos, publishMessage.getBytes(), retained);
             result.setSuccessful(true);
             result.sampleEnd(); // stop stopwatch
-            result.setResponseMessage("Sent " + publishedMessageCount.get() + " messages total");
+            result.setResponseMessage("Sent " + publishedMessageCount.incrementAndGet() + " messages total");
             result.setResponseCode("OK");
-            publishedMessageCount.incrementAndGet();
             return result;
         } catch (MqttException e) {
             result.sampleEnd(); // stop stopwatch
@@ -165,4 +169,12 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
             getLogger().error("Error when closing subscriber", e);
         }
     }
+
+	public String getNameLabel() {
+		return nameLabel;
+	}
+
+	public void setNameLabel(String nameLabel) {
+		this.nameLabel = nameLabel;
+	}
 }
