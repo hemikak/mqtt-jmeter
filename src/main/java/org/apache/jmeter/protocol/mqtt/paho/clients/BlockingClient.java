@@ -113,7 +113,6 @@ public class BlockingClient extends BaseClient {
         message.setRetained(isRetained);
         message.setQos(qos);
 
-        log.info("Trying to publish message to topic:" + topicName);
         // Send the message to the server, control is not returned until
         // it has been delivered to the server meeting the specified
         // quality of service.
