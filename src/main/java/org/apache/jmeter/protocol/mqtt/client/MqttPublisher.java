@@ -21,7 +21,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -45,11 +44,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
         Arguments defaultParameters = new Arguments();
         defaultParameters.addArgument("BROKER_URL", "tcp://localhost:1883");
 
-        try {
-            defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
-        } catch (NoSuchAlgorithmException e) {
-            getLogger().error(e.toString());
-        }
+        defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
 
         defaultParameters.addArgument("TOPIC_NAME", "Sample.MQTT.Topic");
         defaultParameters.addArgument("MESSAGE_RETAINED", "false");

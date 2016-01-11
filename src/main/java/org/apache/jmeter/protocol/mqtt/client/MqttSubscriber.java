@@ -17,14 +17,10 @@ import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
 import org.apache.jmeter.protocol.mqtt.utilities.Constants;
 import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.SampleResult;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
-import java.util.UUID;
 
 public class MqttSubscriber extends AbstractJavaSamplerClient implements Serializable {
 
@@ -43,11 +39,7 @@ public class MqttSubscriber extends AbstractJavaSamplerClient implements Seriali
         Arguments defaultParameters = new Arguments();
         defaultParameters.addArgument("BROKER_URL", "tcp://localhost:1883");
 
-        try {
-            defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
-        } catch (NoSuchAlgorithmException e) {
-            getLogger().error(e.toString());
-        }
+        defaultParameters.addArgument("CLIENT_ID", Utils.UUIDGenerator());
 
         defaultParameters.addArgument("TOPIC_NAME", "Sample.MQTT.Topic");
         defaultParameters.addArgument("CLEAN_SESSION", "false");
