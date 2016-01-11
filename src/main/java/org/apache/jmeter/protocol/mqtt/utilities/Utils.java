@@ -21,9 +21,8 @@ public class Utils {
      * Creates a UUID. The UUID is modified to avoid "ClientId longer than 23 characters" for MQTT.
      *
      * @return A UUID as a string.
-     * @throws NoSuchAlgorithmException
      */
-    public static String UUIDGenerator() throws NoSuchAlgorithmException {
+    public static String UUIDGenerator() {
         String clientId = System.currentTimeMillis() + "." + System.getProperty("user.name");
         clientId = StringUtils.substring(clientId,0,23);
         return clientId;

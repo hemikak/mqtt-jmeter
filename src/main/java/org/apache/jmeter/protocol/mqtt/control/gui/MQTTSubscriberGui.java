@@ -28,7 +28,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * This is the GUI for mqtt Subscriber <br>
@@ -190,15 +189,11 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        try {
-            if (Constants.GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {
-                clientId.setText(Utils.UUIDGenerator());
-            } else if(Constants.RESET_CREDENTIALS.equals(e.getActionCommand())){
-                mqttUser.setText(Constants.MQTT_USER_USERNAME);
-                mqttPwd.setText(Constants.MQTT_USER_PASSWORD);
-            }
-        } catch (NoSuchAlgorithmException e1) {
-            log.error(e1.toString());
+        if (Constants.GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {
+            clientId.setText(Utils.UUIDGenerator());
+        } else if(Constants.RESET_CREDENTIALS.equals(e.getActionCommand())){
+            mqttUser.setText(Constants.MQTT_USER_USERNAME);
+            mqttPwd.setText(Constants.MQTT_USER_PASSWORD);
         }
     }
 }
