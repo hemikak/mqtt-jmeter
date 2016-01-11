@@ -1,13 +1,11 @@
 /**
  * Author : Hemika Yasinda Kodikara
  *
- * Copyright (c) 2015.
+ * Copyright (c) 2016.
  */
 
 package org.apache.jmeter.protocol.mqtt.paho.clients;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.protocol.mqtt.data.objects.Message;
 import org.apache.jorphan.logging.LoggingManager;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -63,18 +61,9 @@ public class AsyncClient extends BaseClient {
     public AsyncClient(String brokerUrl, String clientId, boolean cleanSession,
                        String userName, String password) throws MqttException {
         this.brokerUrl = brokerUrl;
-        //This sample stores in a temporary directory... where messages temporarily
-        // stored until the message has been delivered to the server.
-        //..a real application ought to store them somewhere
-        // where they are not likely to get deleted or tampered with
-        String testPlanFileDir = System.getProperty("java.io.tmpdir");
 
-        if (null != GuiPackage.getInstance()) {
-            String testPlanFile = GuiPackage.getInstance().getTestPlanFile();
-            testPlanFileDir = FilenameUtils.getFullPathNoEndSeparator(testPlanFile);
-            testPlanFileDir = testPlanFileDir + File.separator + "tmp" + File.separator + clientId + File.separator + Thread.currentThread().getId();
-        }
-
+        String testPlanFileDir = System.getProperty("java.io.tmpdir") + File.separator + "tmp" + File.separator +
+                                                            clientId + File.separator + Thread.currentThread().getId();
         MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(testPlanFileDir);
 
         try {
