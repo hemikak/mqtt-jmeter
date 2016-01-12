@@ -9,9 +9,6 @@ package org.apache.jmeter.protocol.mqtt.utilities;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jorphan.io.TextFile;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-
 /**
  * Utility class for plugin
  */
@@ -24,7 +21,7 @@ public class Utils {
      */
     public static String UUIDGenerator() {
         String clientId = System.currentTimeMillis() + "." + System.getProperty("user.name");
-        clientId = StringUtils.substring(clientId,0,23);
+        clientId = StringUtils.substring(clientId, 0, 23);
         return clientId;
     }
 

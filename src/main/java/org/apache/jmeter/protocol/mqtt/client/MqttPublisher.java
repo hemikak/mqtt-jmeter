@@ -122,7 +122,7 @@ public class MqttPublisher extends AbstractJavaSamplerClient implements Serializ
      */
     @Override
     public SampleResult runTest(JavaSamplerContext context) {
-        if (client==null || !client.isConnected()) {
+        if (client == null || !client.isConnected()) {
             setupTest(context);
         }
         SampleResult result = new SampleResult();

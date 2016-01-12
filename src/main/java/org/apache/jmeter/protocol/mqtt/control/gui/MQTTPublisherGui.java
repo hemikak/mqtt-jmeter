@@ -35,9 +35,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-/**
- * @author Tuan Hiep
- */
+
 public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListener, ActionListener {
 
     private static final long serialVersionUID = 240L;
