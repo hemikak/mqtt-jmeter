@@ -1,7 +1,7 @@
 /**
  * Author : Hemika Yasinda Kodikara
  *
- * Copyright (c) 2015.
+ * Copyright (c) 2016.
  */
 
 package org.apache.jmeter.protocol.mqtt.control.gui;
@@ -35,7 +35,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
+/**
+ * This is the MQTT Publisher Sampler GUI class. All swing components of the UI are included in this class.
+ */
 public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListener, ActionListener {
 
     private static final long serialVersionUID = 240L;
@@ -224,7 +226,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         mqttDestination.setText(sampler.getTopicName());
         retained.setSelected(sampler.isMessageRetained());
         cleanSession.setSelected(sampler.isCleanSession());
-        mqttKeepAlive.setText(sampler.getKeepAlive());
+        mqttKeepAlive.setText(Integer.toString(sampler.getKeepAlive()));
         mqttUser.setText(sampler.getUsername());
         mqttPwd.setText(sampler.getPassword());
         typeQoSValue.setText(sampler.getQOS());

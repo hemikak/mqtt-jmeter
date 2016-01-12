@@ -17,6 +17,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -205,5 +206,18 @@ public class AsyncClient extends BaseClient {
     @Override
     public boolean isConnected() {
         return client.isConnected();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws IOException {
+        try {
+            client.disconnect();
+        } catch (MqttException e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
     }
 }

@@ -16,6 +16,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -162,5 +163,18 @@ public class BlockingClient extends BaseClient {
     public void messageArrived(String topic, MqttMessage message) throws MqttException {
         Message newMessage = new Message(message);
         mqttMessageStorage.add(newMessage);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws IOException {
+        try {
+            client.disconnect();
+        } catch (MqttException e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
     }
 }
