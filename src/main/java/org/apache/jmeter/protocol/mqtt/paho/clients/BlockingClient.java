@@ -169,12 +169,11 @@ public class BlockingClient extends BaseClient {
      * {@inheritDoc}
      */
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException{
         try {
             client.disconnect();
         } catch (MqttException e) {
-            e.printStackTrace();
-            log.error(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 }

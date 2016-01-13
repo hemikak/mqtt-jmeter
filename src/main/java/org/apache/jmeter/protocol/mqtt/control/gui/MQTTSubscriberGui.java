@@ -1,7 +1,7 @@
 /**
  * Author : Hemika Yasinda Kodikara
  *
- * Copyright (c) 2015.
+ * Copyright (c) 2016.
  */
 
 package org.apache.jmeter.protocol.mqtt.control.gui;
@@ -30,7 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * This is the GUI for mqtt Subscriber <br>
+ * This is the MQTT Sibscriber Sampler GUI class. All swing components of the UI are included in this class.
  */
 public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListener {
 
@@ -104,6 +104,9 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
 
     }
 
+    /**
+     * Initializes all the UI elements
+     */
     private void init() {
         brokerUrlField.setText(Constants.MQTT_URL_DEFAULT);
                                setLayout(new BorderLayout());
@@ -143,6 +146,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
     }
 
     /**
+     * Creates the panel for user authentication. Username and password are included.
      * @return JPanel Panel with checkbox to choose  user and password
      */
     private Component createAuthPane() {
@@ -170,7 +174,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         clientId.setText(sampler.getClientId());
         mqttDestination.setText(sampler.getTopicName());
         cleanSession.setSelected(sampler.isCleanSession());
-        mqttKeepAlive.setText(sampler.getKeepAlive());
+        mqttKeepAlive.setText(Integer.toString(sampler.getKeepAlive()));
         mqttUser.setText(sampler.getUsername());
         mqttPwd.setText(sampler.getPassword());
         typeQoSValue.setText(sampler.getQOS());

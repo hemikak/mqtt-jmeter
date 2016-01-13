@@ -1,17 +1,19 @@
 /**
  * Author : Hemika Yasinda Kodikara
  *
- * Copyright (c) 2015.
+ * Copyright (c) 2016.
  */
 
 package org.apache.jmeter.protocol.mqtt.sampler;
 
-import java.util.Date;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jmeter.config.Arguments;
-import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
-import org.apache.jmeter.protocol.mqtt.client.MqttSubscriber;
+import org.apache.jmeter.protocol.mqtt.client.ClientPool;
+import org.apache.jmeter.protocol.mqtt.data.objects.Message;
+import org.apache.jmeter.protocol.mqtt.paho.clients.AsyncClient;
+import org.apache.jmeter.protocol.mqtt.paho.clients.BaseClient;
+import org.apache.jmeter.protocol.mqtt.paho.clients.BlockingClient;
+import org.apache.jmeter.protocol.mqtt.utilities.Constants;
+import org.apache.jmeter.protocol.mqtt.utilities.Utils;
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
@@ -20,16 +22,26 @@ import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jmeter.testelement.ThreadListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
-public class SubscriberSampler extends AbstractSampler implements
-        Interruptible, ThreadListener, TestStateListener {
+import java.io.IOException;
+import java.util.Date;
 
+/**
+ * This is MQTT Subscriber sample class. The implementation includes subscriber for MQTT messages with the sample
+ * processing.
+ */
+public class SubscriberSampler extends AbstractSampler implements Interruptible, ThreadListener, TestStateListener {
+
+    private transient BaseClient client;
+    private static final long serialVersionUID = 240L;
+    private static final String lineSeparator = System.getProperty("line.separator");
+    private MqttException exceptionOccurred = null;
+
+    private static final String nameLabel = "MQTT Subscriber";
     private static final Logger log = LoggingManager.getLoggerForClass();
     private transient volatile boolean interrupted = false;
-    private static final long serialVersionUID = 240L;
 
-    private JavaSamplerContext context = null;
-    public transient MqttSubscriber subscriber = null;
     private static final String BROKER_URL = "mqtt.broker.url";
     private static final String CLIENT_ID = "mqtt.client.id";
     private static final String TOPIC_NAME = "mqtt.topic.name";
@@ -57,8 +69,8 @@ public class SubscriberSampler extends AbstractSampler implements
         return getPropertyAsBoolean(CLEAN_SESSION);
     }
 
-    public String getKeepAlive() {
-        return getPropertyAsString(KEEP_ALIVE);
+    public int getKeepAlive() {
+        return getPropertyAsInt(KEEP_ALIVE);
     }
 
     public String getUsername() {
@@ -75,6 +87,10 @@ public class SubscriberSampler extends AbstractSampler implements
 
     public String getClientType() {
         return getPropertyAsString(CLIENT_TYPE);
+    }
+
+    public String getNameLabel() {
+        return nameLabel;
     }
 
     // Setters
@@ -125,17 +141,12 @@ public class SubscriberSampler extends AbstractSampler implements
         interrupted = true;   // so we break the loops in SampleWithListener and SampleWithReceive
 
         log.debug("Thread ended " + new Date());
-        if (this.subscriber != null) {
-            try {
-                this.subscriber.close(interrupted);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.warn(e.getLocalizedMessage(), e);
-            }
-
+        try {
+            ClientPool.clearClient();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
         }
-
 
         return !oldValue;
     }
@@ -146,15 +157,11 @@ public class SubscriberSampler extends AbstractSampler implements
     @Override
     public void testEnded() {
         log.debug("Thread ended " + new Date());
-        if (this.subscriber != null) {
-            try {
-                this.subscriber.close(interrupted);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.warn(e.getLocalizedMessage(), e);
-            }
-
+        try {
+            ClientPool.clearClient();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
         }
     }
 
@@ -171,6 +178,12 @@ public class SubscriberSampler extends AbstractSampler implements
      */
     @Override
     public void testStarted() {
+        if (log.isDebugEnabled()) {
+            log.debug("Thread ended " + new Date());
+            log.debug("MQTT SubscriberSampler: ["
+                      + Thread.currentThread().getName() + "], hashCode=["
+                      + hashCode() + "]");
+        }
     }
 
     /**
@@ -196,31 +209,16 @@ public class SubscriberSampler extends AbstractSampler implements
     public void threadStarted() {
         interrupted = false;
         logThreadStart();
-        if (subscriber == null) {
+        if (client == null) {
             try {
-                subscriber = new MqttSubscriber();
+                if (validate()) {
+                    initClient();
+                } else {
+                    interrupt();
+                }
             } catch (Exception e) {
                 log.error(e.getLocalizedMessage(), e);
             }
-        }
-
-        Arguments parameters = new Arguments();
-        parameters.addArgument("BROKER_URL", getBrokerUrl());
-        parameters.addArgument("CLIENT_ID", getClientId());
-        parameters.addArgument("TOPIC_NAME", getTopicName());
-        parameters.addArgument("CLEAN_SESSION", Boolean.toString(isCleanSession()));
-        parameters.addArgument("KEEP_ALIVE", getKeepAlive());
-        parameters.addArgument("USERNAME", getUsername());
-        parameters.addArgument("PASSWORD", getPassword());
-        parameters.addArgument("QOS", getQOS());
-        parameters.addArgument("CLIENT_TYPE", getClientType());
-
-        if (validate()) {
-            context = new JavaSamplerContext(parameters);
-            subscriber.setNameLabel(getName());
-            subscriber.setupTest(context);
-        } else {
-            interrupt();
         }
     }
 
@@ -230,15 +228,59 @@ public class SubscriberSampler extends AbstractSampler implements
     @Override
     public void threadFinished() {
         log.debug("Thread ended " + new Date());
-        if (this.subscriber != null) {
-            try {
-                this.subscriber.close(interrupted);
+        try {
+            ClientPool.clearClient();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
+        }
+    }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error(e.getLocalizedMessage(), e);
+    /**
+     * Initializes the MQTT client for subscriber.
+     */
+    private void initClient() {
+        String brokerURL = getBrokerUrl();
+        String clientId = getClientId();
+        String topicName = getTopicName();
+        boolean isCleanSession = isCleanSession();
+        int keepAlive = getKeepAlive();
+        String userName = getUsername();
+        String password = getPassword();
+        String clientType = getClientType();
+
+        // Generating client ID if empty
+        if (StringUtils.isEmpty(clientId)) {
+            clientId = Utils.UUIDGenerator();
+        }
+
+        // Quality
+        int qos = 0;
+        if (Constants.MQTT_AT_MOST_ONCE.equals(getQOS())) {
+            qos = 0;
+        } else if (Constants.MQTT_AT_LEAST_ONCE.equals(getQOS())) {
+            qos = 1;
+        } else if (Constants.MQTT_EXACTLY_ONCE.equals(getQOS())) {
+            qos = 2;
+        }
+
+        exceptionOccurred = null;
+
+        try {
+            if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
+                client = new BlockingClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
+            } else if (Constants.MQTT_ASYNC_CLIENT.equals(clientType)) {
+                client = new AsyncClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             }
 
+            if (client != null) {
+                client.subscribe(topicName, qos);
+                ClientPool.addClient(client);
+            }
+
+
+        } catch (MqttException e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -247,7 +289,45 @@ public class SubscriberSampler extends AbstractSampler implements
      */
     @Override
     public SampleResult sample(Entry entry) {
-        return this.subscriber.runTest(context);
+        SampleResult result = new SampleResult();
+        result.setSampleLabel(getNameLabel());
+        result.sampleStart();
+
+        if (null != exceptionOccurred) {
+            result.setSuccessful(false);
+            result.setResponseMessage("Client is not connected." + lineSeparator + exceptionOccurred.toString());
+            result.setResponseData(exceptionOccurred.toString().getBytes());
+            result.sampleEnd();
+            result.setResponseCode("FAILED");
+            return result;
+        }
+
+        Message receivedMessage;
+        while (!interrupted && null != client.getReceivedMessages() && null != client.getReceivedMessageCounter()) {
+            receivedMessage = client.getReceivedMessages().poll();
+            if (receivedMessage != null) {
+                client.getReceivedMessageCounter().incrementAndGet();
+                result.sampleEnd();
+                result.setSuccessful(true);
+                result.setResponseMessage(lineSeparator + "Received " + client.getReceivedMessageCounter().get() + " " +
+                                          "messages." +
+                                          lineSeparator + "Current message QOS : " + receivedMessage.getQos() +
+                                          lineSeparator + "Is current message a duplicate : " + receivedMessage.isDup()
+                                          + lineSeparator + "Received timestamp of current message : " +
+                                          receivedMessage.getCurrentTimestamp() + lineSeparator + "Is current message" +
+                                          " a retained message : " + receivedMessage.isRetained());
+                result.setBytes(receivedMessage.getPayload().length);
+                result.setResponseData(receivedMessage.getPayload());
+                result.setResponseCodeOK();
+                return result;
+            }
+        }
+
+        result.setSuccessful(false);
+        result.setResponseMessage("Client has been stopped or an error occurred while receiving messages. Received "  + " valid messages.");
+        result.sampleEnd();
+        result.setResponseCode("FAILED");
+        return result;
     }
 
     /**
@@ -265,5 +345,4 @@ public class SubscriberSampler extends AbstractSampler implements
         }
         return true;
     }
-
 }
