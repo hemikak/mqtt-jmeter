@@ -208,7 +208,7 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
     /**
      * Initializes the MQTT client for publishing.
      */
-    private void initClient() {
+    private void initClient() throws MqttException {
         String brokerURL = getBrokerUrl();
         String clientId = getClientId();
         topicName = getTopicName();
@@ -252,6 +252,7 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
             }
         } catch (MqttException e) {
             log.error(e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -260,12 +261,25 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
      */
     @Override
     public SampleResult sample(Entry entry) {
-        if (client == null || !client.isConnected()) {
-            initClient();
-        }
         SampleResult result = new SampleResult();
         result.setSampleLabel(getNameLabel());
         result.sampleStart();
+        if (client == null || !client.isConnected()) {
+            try {
+                initClient();
+            } catch (MqttException e) {
+                result.sampleEnd(); // stop stopwatch
+                result.setSuccessful(false);
+                // get stack trace as a String to return as document data
+                java.io.StringWriter stringWriter = new java.io.StringWriter();
+                e.printStackTrace(new java.io.PrintWriter(stringWriter));
+                result.setResponseData(stringWriter.toString(), null);
+                result.setResponseMessage("Unable publish messages." + lineSeparator + "Exception: " + e.toString());
+                result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
+                result.setResponseCode("FAILED");
+                return result;
+            }
+        }
         try {
             client.publish(topicName, qos, publishMessage.getBytes(), retained);
             result.setSuccessful(true);

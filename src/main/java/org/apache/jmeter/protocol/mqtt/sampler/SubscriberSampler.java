@@ -280,6 +280,7 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
 
 
         } catch (MqttException e) {
+            exceptionOccurred = e;
             log.error(e.getMessage(), e);
         }
     }
