@@ -56,24 +56,30 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
 
     private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N(Constants.MQTT_QOS, QOS_TYPES_ITEMS, Constants.MQTT_AT_MOST_ONCE);
     private final JLabeledRadioI18N typeClientValue = new JLabeledRadioI18N(Constants.MQTT_CLIENT_TYPES, CLIENT_TYPES_ITEMS,
-                                                                            Constants.MQTT_BLOCKING_CLIENT);
+            Constants.MQTT_BLOCKING_CLIENT);
 
     public MQTTSubscriberGui() {
         init();
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getStaticLabel() {
         return Constants.MQTT_SUBSCRIBER_TITLE;
     }
 
     /**
+     * Creates a test element for MQTT subscriber
      * @see org.apache.jmeter.gui.JMeterGUIComponent#createTestElement()
      */
     @Override
@@ -109,7 +115,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
      */
     private void init() {
         brokerUrlField.setText(Constants.MQTT_URL_DEFAULT);
-                               setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         setBorder(makeBorder());
         add(makeTitlePanel(), BorderLayout.NORTH);
         JPanel mainPanel = new VerticalPanel();
@@ -164,7 +170,10 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
     }
 
     /**
-     * the implementation loads the URL and the soap action for the request.
+     * {@inheritDoc}. </br>.
+     * Loads fields from an existing sampler file.
+     *
+     * @param el The test element
      */
     @Override
     public void configure(TestElement el) {
@@ -181,11 +190,19 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         typeClientValue.setText(sampler.getClientType());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clearGui() {
         super.clearGui();
     }
 
+    /**
+     * Creates the topic destination panel.
+     *
+     * @return The topic destination panel.
+     */
     private JPanel createDestinationPane() {
         JPanel panel = new VerticalPanel(); //new BorderLayout(3, 0)
         this.mqttDestination.setLayout((new BoxLayout(mqttDestination, BoxLayout.X_AXIS)));
@@ -196,6 +213,11 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         panel.add(TPanel);        return panel;
     }
 
+    /**
+     * Creates the mqtt client keep alive panel.
+     *
+     * @return The mqtt client keep alive panel.
+     */
     private JPanel createKeepAlivePane() {
         JPanel panel = new VerticalPanel(); //new BorderLayout(3, 0)
         this.mqttKeepAlive.setLayout((new BoxLayout(mqttKeepAlive, BoxLayout.X_AXIS)));
@@ -208,6 +230,9 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         return panel;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (Constants.GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {

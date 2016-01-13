@@ -207,6 +207,8 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
 
     /**
      * Initializes the MQTT client for publishing.
+     *
+     * @throws MqttException
      */
     private void initClient() throws MqttException {
         String brokerURL = getBrokerUrl();

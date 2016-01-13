@@ -333,6 +333,7 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
 
     /**
      * Validates parameters
+     *
      * @return true if valid parameters, else false
      */
     private boolean validate() {
@@ -347,3 +348,4 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
         return true;
     }
 }
+

@@ -69,11 +69,11 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
     private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N(Constants.MQTT_QOS, QOS_TYPES_ITEMS, Constants.MQTT_AT_MOST_ONCE);
 
     private final JLabeledRadioI18N typeClientValue = new JLabeledRadioI18N(Constants.MQTT_CLIENT_TYPES, CLIENT_TYPES_ITEMS,
-                                                                            Constants.MQTT_BLOCKING_CLIENT);
+            Constants.MQTT_BLOCKING_CLIENT);
 
     private final JLabeledRadioI18N messageInputValue = new JLabeledRadioI18N(Constants.MQTT_MESSAGE_INPUT_TYPE,
-                                                                              MESSAGE_INPUT_TYPE,
-                                                                              Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT);
+            MESSAGE_INPUT_TYPE,
+            Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT);
 
     private final JLabel textArea = new JLabel(Constants.MQTT_TEXT_AREA);
     private final JSyntaxTextArea textMessage = new JSyntaxTextArea(10, 50);
@@ -86,17 +86,24 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         init();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getStaticLabel() {
         return Constants.MQTT_PUBLISHER_TITLE;
     }
 
     /**
+     * Creates a test element for MQTT publisher
      * @see org.apache.jmeter.gui.JMeterGUIComponent#createTestElement()
      */
     @Override
@@ -133,6 +140,9 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         }
     }
 
+    /**
+     * Initializes all the UI elements
+     */
     private void init() {
         brokerUrlField.setText(Constants.MQTT_URL_DEFAULT);
         setLayout(new BorderLayout());
@@ -153,7 +163,7 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         ControlPanel.add(createKeepAlivePane());
         ControlPanel.add(createAuthPane());
         ControlPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),
-                                                                "Connection Info"));
+                "Connection Info"));
         mainPanel.add(ControlPanel);
         JPanel TPanel = new VerticalPanel();
         TPanel.setLayout(new BoxLayout(TPanel, BoxLayout.X_AXIS));
@@ -182,7 +192,6 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         contentPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray), "Content"));
         mainPanel.add(contentPanel);
 
-
         // Setting default values and handlers
         generateClientID.setActionCommand(Constants.GENERATE_CLIENT_ID_COMMAND);
         resetUserNameAndPassword.setActionCommand(Constants.RESET_CREDENTIALS);
@@ -198,6 +207,8 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
     }
 
     /**
+     * Creates the panel for user authentication. Username and password are included.
+     *
      * @return JPanel Panel with checkbox to choose  user and password
      */
     private Component createAuthPane() {
@@ -215,7 +226,10 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
     }
 
     /**
-     * the implementation loads the URL and the soap action for the request.
+     * {@inheritDoc}. </br>.
+     * Loads fields from an existing sampler file.
+     *
+     * @param el The test element
      */
     @Override
     public void configure(TestElement el) {
@@ -246,11 +260,19 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clearGui() {
         super.clearGui();
     }
 
+    /**
+     * Creates the topic destination panel.
+     *
+     * @return The topic destination panel.
+     */
     private JPanel createDestinationPane() {
         JPanel panel = new VerticalPanel(); //new BorderLayout(3, 0)
         this.mqttDestination.setLayout((new BoxLayout(mqttDestination, BoxLayout.X_AXIS)));
@@ -262,6 +284,11 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         return panel;
     }
 
+    /**
+     * Creates the mqtt client keep alive panel.
+     *
+     * @return The mqtt client keep alive panel.
+     */
     private JPanel createKeepAlivePane() {
         JPanel panel = new VerticalPanel(); //new BorderLayout(3, 0)
         this.mqttKeepAlive.setLayout((new BoxLayout(mqttKeepAlive, BoxLayout.X_AXIS)));
@@ -274,6 +301,9 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         return panel;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (Constants.GENERATE_CLIENT_ID_COMMAND.equals(e.getActionCommand())) {
@@ -284,6 +314,9 @@ public class MQTTPublisherGui extends AbstractSamplerGui implements ChangeListen
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stateChanged(ChangeEvent e) {
         if (Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT.equals(messageInputValue.getText())) {

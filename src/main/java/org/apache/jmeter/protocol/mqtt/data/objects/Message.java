@@ -9,7 +9,7 @@ package org.apache.jmeter.protocol.mqtt.data.objects;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
- *
+ * Message object to hold MQTT message content.
  */
 public class Message {
     private byte[] payload;
