@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Hemika Yasinda Kodikara
+ * Copyright 2017 Hemika Yasinda Kodikara
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.apache.jmeter.protocol.mqtt.sampler;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.protocol.mqtt.client.ClientPool;
 import org.apache.jmeter.protocol.mqtt.paho.clients.AsyncClient;
@@ -31,6 +32,7 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +47,7 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
     private transient BaseClient client;
     private int qos = 0;
     private String topicName = StringUtils.EMPTY;
-    private String publishMessage = StringUtils.EMPTY;
+    private byte[] publishMessage;
     private boolean retained;
     private AtomicInteger publishedMessageCount = new AtomicInteger(0);
     private static final String nameLabel = "MQTT Publisher";
@@ -214,55 +216,58 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
     public void testStarted(String arg0) {
         testStarted();
     }
-
+    
     /**
      * Initializes the MQTT client for publishing.
      *
      * @throws MqttException
      */
-    private void initClient() throws MqttException {
-        String brokerURL = getBrokerUrl();
-        String clientId = getClientId();
-        topicName = getTopicName();
-        retained = isMessageRetained();
-        boolean isCleanSession = isCleanSession();
-        int keepAlive = getKeepAlive();
-        String userName = getUsername();
-        String password = getPassword();
-        String clientType = getClientType();
-        String messageInputType = getMessageInputType();
-
-        // Generating client ID if empty
-        if (StringUtils.isEmpty(clientId)) {
-            clientId = Utils.UUIDGenerator();
-        }
-
-        // Quality
-        if (Constants.MQTT_AT_MOST_ONCE.equals(getQOS())) {
-            qos = 0;
-        } else if (Constants.MQTT_AT_LEAST_ONCE.equals(getQOS())) {
-            qos = 1;
-        } else if (Constants.MQTT_EXACTLY_ONCE.equals(getQOS())) {
-            qos = 2;
-        }
-
-        if (Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT.equals(messageInputType)) {
-            publishMessage = getMessageValue();
-        } else if (Constants.MQTT_MESSAGE_INPUT_TYPE_FILE.equals(messageInputType)) {
-            publishMessage = Utils.getFileContent(getMessageValue());
-        }
-
+    private void initClient() throws MqttException, IOException {
         try {
+            String brokerURL = getBrokerUrl();
+            String clientId = getClientId();
+            topicName = getTopicName();
+            retained = isMessageRetained();
+            boolean isCleanSession = isCleanSession();
+            int keepAlive = getKeepAlive();
+            String userName = getUsername();
+            String password = getPassword();
+            String clientType = getClientType();
+            String messageInputType = getMessageInputType();
+            
+            // Generating client ID if empty
+            if (StringUtils.isEmpty(clientId)) {
+                clientId = Utils.UUIDGenerator();
+            }
+            
+            // Quality
+            if (Constants.MQTT_AT_MOST_ONCE.equals(getQOS())) {
+                qos = 0;
+            } else if (Constants.MQTT_AT_LEAST_ONCE.equals(getQOS())) {
+                qos = 1;
+            } else if (Constants.MQTT_EXACTLY_ONCE.equals(getQOS())) {
+                qos = 2;
+            }
+            
+            if (Constants.MQTT_MESSAGE_INPUT_TYPE_TEXT.equals(messageInputType)) {
+                publishMessage = getMessageValue().getBytes();
+            } else if (Constants.MQTT_MESSAGE_INPUT_TYPE_FILE.equals(messageInputType)) {
+                publishMessage = FileUtils.readFileToByteArray(new File(getMessageValue()));
+            }
+            
             if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
                 client = new BlockingClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             } else if (Constants.MQTT_ASYNC_CLIENT.equals(clientType)) {
                 client = new AsyncClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             }
-
+            
             if (null != client) {
                 ClientPool.addClient(client);
             }
         } catch (MqttException e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw e;
         }
@@ -290,10 +295,21 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
                 result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
                 result.setResponseCode("FAILED");
                 return result;
+            } catch (IOException e) {
+                result.sampleEnd(); // stop stopwatch
+                result.setSuccessful(false);
+                // get stack trace as a String to return as document data
+                java.io.StringWriter stringWriter = new java.io.StringWriter();
+                e.printStackTrace(new java.io.PrintWriter(stringWriter));
+                result.setResponseData(stringWriter.toString(), null);
+                result.setResponseMessage("Unable publish messages." + lineSeparator + "Exception: " + e.toString());
+                result.setDataType(org.apache.jmeter.samplers.SampleResult.TEXT);
+                result.setResponseCode("FAILED");
+                return result;
             }
         }
         try {
-            client.publish(topicName, qos, publishMessage.getBytes(), retained);
+            client.publish(topicName, qos, publishMessage, retained);
             result.setSuccessful(true);
             result.sampleEnd(); // stop stopwatch
             result.setResponseMessage("Sent " + publishedMessageCount.incrementAndGet() + " messages total");
