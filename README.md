@@ -25,6 +25,16 @@ This would do the following tasks...
 * Updates the file messages.properties in the folder :/org/apache/jmeter/resources/
 in **ApacheJMeter_core.jar** by new file messages.properties.
 
+# Contributing
+
+Pull requests are encouraged.
+
+# Copyright and License
+
+This software is Copyright (c) 2016 by Hemika Yasinda Kodikara.
+
+This is free software, licensed under the Apache License, Version 2.0.
+
 Regards,  
 Hemika
 
