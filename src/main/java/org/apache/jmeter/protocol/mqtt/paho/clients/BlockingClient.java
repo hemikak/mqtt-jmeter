@@ -27,7 +27,8 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ConcurrentLinkedQueue;
+//import java.util.concurrent.ConcurrentLinkedQueue; ----- Root cause of high CPU utilization
+import java.util.concurrent.ArrayBlockingQueue; // used to overcome the issue caused by ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -139,7 +140,7 @@ public class BlockingClient extends BaseClient {
      */
     @Override
     public void subscribe(String topicName, int qos) throws MqttException {
-        mqttMessageStorage = new ConcurrentLinkedQueue<Message>();
+        mqttMessageStorage = new ArrayBlockingQueue<Message>(1024);
         receivedMessageCounter = new AtomicLong(0);
 
         // Subscribe to the requested topic

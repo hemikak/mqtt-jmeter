@@ -315,7 +315,11 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
 
         Message receivedMessage;
         while (!interrupted && null != client.getReceivedMessages() && null != client.getReceivedMessageCounter()) {
-            receivedMessage = client.getReceivedMessages().poll();
+             try{
+				receivedMessage = client.getReceivedMessages().take();			
+			} catch (InterruptedException e){
+				throw new RuntimeException(e);
+			}
             if (receivedMessage != null) {
                 client.getReceivedMessageCounter().incrementAndGet();
                 result.sampleEnd();

@@ -21,14 +21,15 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.Closeable;
-import java.util.concurrent.ConcurrentLinkedQueue;
+//import java.util.concurrent.ConcurrentLinkedQueue; ---- Root cause of high CPU utilization even for a single user run
+import java.util.concurrent.ArrayBlockingQueue; // Used to overcome the issue caused by ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This is the template class for both Async and Sync MQTT clients.
  */
 public abstract class BaseClient implements MqttCallback, Closeable {
-    protected ConcurrentLinkedQueue<Message> mqttMessageStorage = null;
+    protected ArrayBlockingQueue<Message> mqttMessageStorage = new ArrayBlockingQueue<Message>(1024);
     protected AtomicLong receivedMessageCounter = null;
 
     public abstract void publish(String topicName, int qos, byte[] payload, boolean isRetained) throws MqttException;
@@ -36,7 +37,7 @@ public abstract class BaseClient implements MqttCallback, Closeable {
     public abstract void disconnect() throws MqttException;
     public abstract  boolean isConnected();
 
-    public ConcurrentLinkedQueue<Message> getReceivedMessages(){
+    public ArrayBlockingQueue<Message> getReceivedMessages(){
         return mqttMessageStorage;
     }
     public AtomicLong getReceivedMessageCounter(){
