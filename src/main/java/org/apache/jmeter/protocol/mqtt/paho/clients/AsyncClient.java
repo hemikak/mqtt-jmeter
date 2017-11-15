@@ -215,7 +215,7 @@ public class AsyncClient extends BaseClient {
      */
     @Override
     public boolean isConnected() {
-        return client.isConnected();
+        return client != null && client.isConnected();
     }
 
     /**
@@ -224,7 +224,9 @@ public class AsyncClient extends BaseClient {
     @Override
     public void close() throws IOException {
         try {
-            client.disconnect();
+            if (client != null && client.isConnected()) {
+                client.disconnect();
+            }
         } catch (MqttException e) {
             e.printStackTrace();
             log.error(e.getMessage(), e);

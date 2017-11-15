@@ -181,7 +181,9 @@ public class BlockingClient extends BaseClient {
     @Override
     public void close() throws IOException{
         try {
-            client.disconnect();
+            if (client != null && client.isConnected()) {
+                client.disconnect();
+            }
         } catch (MqttException e) {
             throw new IOException(e.getMessage(), e);
         }
