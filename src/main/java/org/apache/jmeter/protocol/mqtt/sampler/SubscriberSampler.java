@@ -58,7 +58,7 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
     private static final String CLEAN_SESSION = "mqtt.clean.session";
     private static final String KEEP_ALIVE = "mqtt.keep.alive";
     private static final String USERNAME = "mqtt.auth.username";
-    private static final String PASSWORD = "mqtt.auth.password";
+    private static final String PASSWORD = "mqtt.auth.password.subscriber";
     private static final String QOS = "mqtt.qos";
     private static final String CLIENT_TYPE = "mqtt.client.type";
 

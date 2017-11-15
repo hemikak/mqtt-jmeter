@@ -61,7 +61,7 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
     private final JLabeledTextField mqttKeepAlive = new JLabeledTextField(Constants.MQTT_KEEP_ALIVE);
 
     private final JLabeledTextField mqttUser = new JLabeledTextField(Constants.MQTT_USERNAME);
-    private final JLabeledTextField mqttPwd = new JLabeledPasswordField(Constants.MQTT_PASSWORD);
+    private final JLabeledTextField mqttPwd = new JLabeledTextField(Constants.MQTT_PASSWORD);
     private final JButton resetUserNameAndPassword = new JButton(Constants.MQTT_RESET_USERNAME_PASSWORD);
 
     private final JLabeledRadioI18N typeQoSValue = new JLabeledRadioI18N(Constants.MQTT_QOS, QOS_TYPES_ITEMS, Constants.MQTT_AT_MOST_ONCE);
