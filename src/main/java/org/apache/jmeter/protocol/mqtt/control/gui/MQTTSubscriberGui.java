@@ -38,6 +38,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * This is the MQTT Sibscriber Sampler GUI class. All swing components of the UI are included in this class.
@@ -57,6 +60,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
     private final JLabeledTextField mqttDestination = new JLabeledTextField(Constants.MQTT_TOPIC);
 
     private final JCheckBox cleanSession = new JCheckBox(Constants.MQTT_CLEAN_SESSION, false);
+    private final JCheckBox listenOnAnotherThread = new JCheckBox(Constants.LISTEN_ON_THREAD, false);
+    private final JLabeledTextField threadTimeout = new JLabeledTextField(Constants.THREAD_TIMEOUT);
 
     private final JLabeledTextField mqttKeepAlive = new JLabeledTextField(Constants.MQTT_KEEP_ALIVE);
 
@@ -112,6 +117,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         sampler.setClientId(clientId.getText());
         sampler.setTopicName(mqttDestination.getText());
         sampler.setCleanSession(cleanSession.isSelected());
+        sampler.setNewThread(listenOnAnotherThread.isSelected());
+        sampler.setThreadTimeOut(threadTimeout.getText());
         sampler.setKeepAlive(mqttKeepAlive.getText());
         sampler.setUsername(mqttUser.getText());
         sampler.setPassword(mqttPwd.getText());
@@ -139,6 +146,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         ControlPanel.add(DPanel);
         ControlPanel.add(createDestinationPane());
         ControlPanel.add(cleanSession);
+        ControlPanel.add(listenOnAnotherThread);
+        ControlPanel.add(threadTimeout);
         ControlPanel.add(createKeepAlivePane());
         ControlPanel.add(createAuthPane());
         ControlPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray),
@@ -193,6 +202,8 @@ public class MQTTSubscriberGui extends AbstractSamplerGui implements ActionListe
         clientId.setText(sampler.getClientId());
         mqttDestination.setText(sampler.getTopicName());
         cleanSession.setSelected(sampler.isCleanSession());
+        listenOnAnotherThread.setSelected(sampler.isNewThread());
+        threadTimeout.setText(sampler.getThreadTimeout());
         mqttKeepAlive.setText(Integer.toString(sampler.getKeepAlive()));
         mqttUser.setText(sampler.getUsername());
         mqttPwd.setText(sampler.getPassword());

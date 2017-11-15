@@ -50,4 +50,6 @@ public final class Constants {
     public static final String MQTT_USER_USERNAME = "admin";
     public static final String MQTT_USERNAME = "Username";
     public static final String RESET_CREDENTIALS = "reset_credentials";
+    public static final String LISTEN_ON_THREAD =  "Listen on Thread";
+    public static final String THREAD_TIMEOUT = "Thread Timeout";
 }
