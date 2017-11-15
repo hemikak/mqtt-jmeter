@@ -254,12 +254,17 @@ public class PublisherSampler extends AbstractSampler implements TestStateListen
             } else if (Constants.MQTT_MESSAGE_INPUT_TYPE_FILE.equals(messageInputType)) {
                 publishMessage = FileUtils.readFileToByteArray(new File(getMessageValue()));
             }
-            
+            if (null != client) {
+                //make sure this client is closed before making a new connection
+                client.close();
+            }
+
             if (Constants.MQTT_BLOCKING_CLIENT.equals(clientType)) {
                 client = new BlockingClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             } else if (Constants.MQTT_ASYNC_CLIENT.equals(clientType)) {
                 client = new AsyncClient(brokerURL, clientId, isCleanSession, userName, password, keepAlive);
             }
+
             
             if (null != client) {
                 ClientPool.addClient(client);
