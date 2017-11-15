@@ -235,9 +235,7 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
         logThreadStart();
         if (client == null) {
             try {
-                if (validate()) {
-                    initClient();
-                } else {
+                if (!validate()) {
                     interrupt();
                 }
             } catch (Exception e) {
@@ -278,16 +276,6 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
             clientId = Utils.UUIDGenerator();
         }
 
-        // Quality
-        int qos = 0;
-        if (Constants.MQTT_AT_MOST_ONCE.equals(getQOS())) {
-            qos = 0;
-        } else if (Constants.MQTT_AT_LEAST_ONCE.equals(getQOS())) {
-            qos = 1;
-        } else if (Constants.MQTT_EXACTLY_ONCE.equals(getQOS())) {
-            qos = 2;
-        }
-
         exceptionOccurred = null;
 
         try {
@@ -298,9 +286,8 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
             }
 
             if (client != null) {
-                client.subscribe(topicName, qos);
                 ClientPool.addClient(client);
-            }
+           }
 
 
         } catch (MqttException e) {
@@ -314,36 +301,25 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
      */
     @Override
     public SampleResult sample(Entry entry) {
-        SampleResult result = new SampleResult();
+        final SampleResult result = new SampleResult();
         result.setSampleLabel(getNameLabel());
         result.sampleStart();
 
-        if (null != exceptionOccurred) {
-            result.setSuccessful(false);
-            result.setResponseMessage("Client is not connected." + lineSeparator + exceptionOccurred.toString());
-            result.setResponseData(exceptionOccurred.toString().getBytes());
-            result.sampleEnd();
-            result.setResponseCode("FAILED");
-            return result;
-        }
+        initClient();
+        if (client != null) {
+            try {
+                client.subscribe(getTopicName(), getIntQos(getQOS()));
+            } catch (MqttException e) {
+                log.error("Error while subscribed to  topic", e);
+                exceptionOccurred = e;
+            }
 
-        Message receivedMessage;
-        while (!interrupted && null != client.getReceivedMessages() && null != client.getReceivedMessageCounter()) {
-            receivedMessage = client.getReceivedMessages().poll();
-            if (receivedMessage != null) {
-                client.getReceivedMessageCounter().incrementAndGet();
+            if (null != exceptionOccurred) {
+                result.setSuccessful(false);
+                result.setResponseMessage("Client is not connected." + lineSeparator + exceptionOccurred.toString());
+                result.setResponseData(exceptionOccurred.toString().getBytes());
                 result.sampleEnd();
-                result.setSuccessful(true);
-                result.setResponseMessage(lineSeparator + "Received " + client.getReceivedMessageCounter().get() + " " +
-                                          "messages." +
-                                          lineSeparator + "Current message QOS : " + receivedMessage.getQos() +
-                                          lineSeparator + "Is current message a duplicate : " + receivedMessage.isDup()
-                                          + lineSeparator + "Received timestamp of current message : " +
-                                          receivedMessage.getCurrentTimestamp() + lineSeparator + "Is current message" +
-                                          " a retained message : " + receivedMessage.isRetained());
-                result.setBytes(receivedMessage.getPayload().length);
-                result.setResponseData(receivedMessage.getPayload());
-                result.setResponseCodeOK();
+                result.setResponseCode("FAILED");
                 return result;
             }
 
@@ -464,6 +440,21 @@ public class SubscriberSampler extends AbstractSampler implements Interruptible,
             return false;
         }
         return true;
+    }
+
+    /**
+     * get quality of service value
+     */
+    private int getIntQos(String stringQos) {
+        int qos = 0;
+        if (Constants.MQTT_AT_MOST_ONCE.equals(stringQos)) {
+            qos = 0;
+        } else if (Constants.MQTT_AT_LEAST_ONCE.equals(stringQos)) {
+            qos = 1;
+        } else if (Constants.MQTT_EXACTLY_ONCE.equals(stringQos)) {
+            qos = 2;
+        }
+        return qos;
     }
 }
 
